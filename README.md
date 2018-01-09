@@ -6,3 +6,7 @@
 * Build dedupers which filter same news by using NLP (TF-IDF) to analyze similarities of articles scraped from news websites.
 * Use Tensorflow for machine learning which can shows news according to users interests.
 Build a single-page web.
+ 
+```
+
+![Diagram](https://github.com/WeiChienHsu/NEWS_push_project/blob/master/Untitled%20Diagram.xml)
