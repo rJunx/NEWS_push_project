@@ -7,6 +7,6 @@
 * Use Tensorflow for machine learning which can shows news according to users interests.
 Build a single-page web.
  
-```
+
 
 ![Diagram](https://github.com/WeiChienHsu/NEWS_push_project/blob/master/Untitled%20Diagram.xml)
