@@ -9,4 +9,4 @@ Build a single-page web.
  
 
 
-[GitHub Logo](/app_structure.png)
+![App Structure](/app_structure.png)
