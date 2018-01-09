@@ -9,4 +9,4 @@ Build a single-page web.
  
 
 
-![Diagram](https://github.com/WeiChienHsu/NEWS_push_project/blob/master/Untitled%20Diagram.xml)
+[GitHub Logo](/app_structure.png)
