@@ -8,5 +8,6 @@
 Build a single-page web.
  
 
-
+***
 ![App Structure](/app_structure.png)
+***
