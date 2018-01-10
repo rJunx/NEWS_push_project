@@ -23,7 +23,26 @@ Build a single-page web.
 ## Install & Init Environment
 ### Create React App - likes Angular cli (recommened by Facebook)
 [Create React App](https://reactjs.org/blog/2016/07/22/create-apps-with-no-configuration.html)
-- Deal with webpack and give a whole framework
+* Deal with webpack and give a whole framework
+
+- Install CRA (Global) : Local Developing Tool
+```
+sudo npm install -g create-react-app
+```
+- Create a new React App
+```
+create-react-app top-news
+```
+- Test Connection
+```
+cd top-news
+npm start
+```
+
+
+
+
+
 
 ## App
 
