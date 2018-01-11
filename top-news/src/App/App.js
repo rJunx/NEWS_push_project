@@ -2,6 +2,7 @@ import 'materialize-css/dist/css/materialize.min.css';
 import React from 'react';
 import './App.css';
 import logo from './logo.png';
+import NewsPanel from '../NewsPanel/NewsPanel';
 
 class App extends React.Component {
   render() {
@@ -9,7 +10,7 @@ class App extends React.Component {
       <div>
         <img className = 'logo' src = {logo} alt = 'logo'/>
         <div className = 'container'>
-             {/* TODO */}
+             <NewsPanel />
         </div>
       </div>
     ); 

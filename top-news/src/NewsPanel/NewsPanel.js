@@ -1,5 +1,6 @@
 import React from 'react';
 import './NewsPanel.css';
+import NewsCard from '../NewsCard/NewsCard';
 
 class NewsPanel extends React.Component {
   constructor() {
@@ -38,9 +39,19 @@ class NewsPanel extends React.Component {
   renderNews() {
     const news_list = this.state.news.map(news => {
       return (
-        <a className = 
-      )
+        <a className = 'list-group-item' key = {news.digest} href = '#'>
+          <NewsCard news = {news} />
+        </a>  
+      );
     });
+
+    return (
+      <div className = 'container-fluid'>
+        <div className = "list-group">
+          {news_list}
+        </div>  
+      </div>
+    );
   }
 
   render() {
@@ -59,3 +70,5 @@ class NewsPanel extends React.Component {
     }
   }
 }
+
+export default NewsPanel;
