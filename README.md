@@ -507,3 +507,27 @@ offestHeight  |          |  |
     window.addEventListener('scroll', () => this.handleScroll());
   }
 ```
+## Debounce 去抖動
+
+[Lodash](https://lodash.com/)
+
+- Install Lodash inclient
+```
+npm install lodash --save
+```
+
+- Solve the Scroll frequent problems (Scroll Events happened too much)
+* Send several requests to backend too frequently
+```js
+import _ from 'lodash';
+
+  componentDidMount() {
+    this.loadMoreNews();
+    this.loadMoreNews = _.debounce(this.loadMoreNews, 1000);
+    window.addEventListener('scroll', () => this.handleScroll());
+  }
+```
+
+
+
+##
