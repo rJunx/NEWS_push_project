@@ -527,7 +527,6 @@ import _ from 'lodash';
     window.addEventListener('scroll', () => this.handleScroll());
   }
 ```
+***
 
-
-
-##
+# Week 2
