@@ -13,7 +13,7 @@ Build a single-page web.
 
 ## De-Couple into Components
 
-![App Structure](/app_structure.png)
+![App Structure](image/app_structure.png)
 
 * Base : Whole React App (Navbar + App)
 * App : Image(title) + NewsPanel
@@ -528,5 +528,73 @@ import _ from 'lodash';
   }
 ```
 ***
+
+
+# SOA (Service Oriented Architrcture)
+- All service interfaces should be designed for both internal and external users
+```
+Benefit:
+Isolation - language / technology / tools / 
+        decoupleing / independency / deployment / maintenance
+Ownership - minimal gray area and gap
+Scalability - easy to scale up and modify
+=======
+Con:
+Complexity - sometimes unnecessary
+Latency - network communication eats time
+Test effort - all services require E2E tests
+DevOp : On-call!!!
+```
+- Example:
+* Often built as a three tier architecture:
+```
+   [Desktop User]
+        |
+ [Presentation Tier] : Client interatcion via a web browser
+        | 
+    [Logic Tier] : provide the appliction's 
+        |          functionality via detailed processing
+   |Storage Tier|: handle persisting and retrieving application data                
+
+```
+- Unfortucately things get more complicated: Comflict!!!!!!!!!
+* Ohter types of users
+* Attachments
+* Bulk operations
+* Data pipelines
+* Notifications
+* Monitoring
+* Testing
+```
+Mobile          Destop      UI
+User            User       Test
+            \     |       /
+Chrome
+Extension  -  Presentation -    Prober
+                 Tier
+File                          File
+Upload      \      |     /   Download
+                 Logic    
+Notifica-   -    Tier    -  Command
+tions                       Line Tool
+          /       |       \
+CSV             Storage        CSV    
+Upload            Tier        Download
+          /               \
+Data                           Data
+Provider                      Consumer
+```
+
+- With SOA:
+* Fort-end Service handles all external interactions
+* Back-end implements one protocol to talk to front-end
+* All clients see same business abstraction
+* Consistent business logic enforcement
+* Easy internal refactoring
+
+![SOA Structure](image/SOA_structure.png)
+
+***
+
 
 # Week 2
