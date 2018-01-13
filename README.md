@@ -622,3 +622,102 @@ Provider                      Consumer
 * News API
 * Pylint and PEP 8 
 
+## BackEnd Server
+- Copy Week 5 to Week 6
+```
+cp -r week5 / week6
+```
+- Open a file backend_server and a service.py
+``` 
+mkdir backend_server
+touch backend_server/service.py
+```
+### JSONRPClib library
+- Build a Client or Server to send or receive RPC Request
+- Not have a good support to Python 3.5, so we need a jsonrpclib-pelix to help development
+[JSONRPClib](https://github.com/joshmarshall/jsonrpclib)
+[JSONRPClib-pelix](https://pypi.python.org/pypi/jsonrpclib-pelix/)
+
+- install library
+``` 
+pip3 install jsonrpclib
+pip3 install jsonrpclib-pelix
+```
+## RPC Server - Testing
+* Server Host define
+* Server Port define 
+- (Reason why we define is that in the future if we want to change that we could only change in the first line)
+
+* Give a function - add 
+* Register host and port and your fnuctions
+```py3
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+
+SERVER_HOST = 'localhost';
+SERVER_PORT = 4040;
+
+def add(a, b):
+  print("Add is called with %d and %d " %(a, b))
+  return a + b
+
+RPC_SERVER = SimpleJSONRPCServer((SERVER_HOST, SERVER_PORT))
+RPC_SERVER.register_function(add, 'add')
+
+print("Starting RPC server")
+
+RPC_SERVER.serve_forever()
+```
+
+#### Use POSTMAN to Test
+- Send a REQUEST:
+- jsonpc version
+- id : to identify
+- method : add
+- params : give a & b 
+```
+POST Request:
+{
+	"jsonrpc" : "2.0",
+	"id" : 1,
+	"method" : "add",
+	"params" : [1,2]
+}
+
+Result:
+{
+    "result": 3,
+    "id": 1,
+    "jsonrpc": "2.0"
+}
+
+Add is called with 13 and 2
+127.0.0.1 - - [13/Jan/2018 14:48:25] "POST / HTTP/1.1" 200 -
+
+```
+
+## NodeJS Server as a Client to send Request to Backend Server
+- Open a new folder in web_server/server/
+```
+mkdir web_server/server/rpc_client
+```
+- Change news.js server not to hard code the data here but get News from our backend server
+```js
+var express = require('express');
+var router = express.Router();
+
+
+/* GET News List. */
+router.get('/', function(req, res, next) {
+  news = backend_server.getNews();
+  res.json(news);
+});
+
+module.exports = router;
+
+```
+
+- Open a rpc_client.js with a helper method to let news.js could "getNoews()" from our backend server
+```js
+
+```
+ 
