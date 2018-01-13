@@ -531,7 +531,7 @@ import _ from 'lodash';
 
 
 # SOA (Service Oriented Architrcture)
-- All service interfaces should be designed for both internal and external users
+#### All service interfaces should be designed for both internal and external users
 ```
 Benefit:
 Isolation - language / technology / tools / 
@@ -557,7 +557,7 @@ DevOp : On-call!!!
    |Storage Tier|: handle persisting and retrieving application data                
 
 ```
-- Unfortucately things get more complicated: Comflict!!!!!!!!!
+#### Unfortucately things get more complicated: Comflict!!!!!!!!!
 * Ohter types of users
 * Attachments
 * Bulk operations
@@ -585,7 +585,7 @@ Data                           Data
 Provider                      Consumer
 ```
 
-- With SOA:
+#### With SOA:
 * Fort-end Service handles all external interactions
 * Back-end implements one protocol to talk to front-end
 * All clients see same business abstraction
@@ -598,3 +598,27 @@ Provider                      Consumer
 
 
 # Week 2 Backend Service
+- Servive + PRC
+```
+
+|| Client ||  || Node Server ||  || Backend Server ||  || Redis || || MongoDB ||  || ML Server ||
+    |                 |                 | Check if in Redis  |            |              |
+    |---------------> |                 |<------------------>|            |              |
+    | fetch more news |---------------->|    (If not) get news from DB    |              |                 
+    |(userID/ pageNum)| getNewsSunmmaire|<------------------------------->|              |
+    |                 | sForUser        |       Get Recommended news from ML server      |
+    |<----------------|(userID /pageNum)|<---------------------------------------------->|
+    | Sliced News     |                 |Store combined news |            |              |                   
+    |                 |<----------------|       in Redis     |            |              |
+    |                 | Sliced News     |------------------->|            |              |
+    |                 |                 |                    |            |              |
+|| Client ||  || Node Server ||  || Backend Server ||  || Redis || || MongoDB ||  || ML Server ||
+
+```
+* Backend Server - RPC Server
+* Node Server - RPC Server
+* MongoDB
+* CloudAMQP
+* News API
+* Pylint and PEP 8 
+
