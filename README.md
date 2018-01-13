@@ -716,8 +716,58 @@ module.exports = router;
 
 ```
 
+### Make NodeJs as a client - Npm jayson
+[jayson](https://www.npmjs.com/package/jayson)
+
+- install jayson in server
+```
+npm install jayson --save
+```
+
 - Open a rpc_client.js with a helper method to let news.js could "getNoews()" from our backend server
 ```js
-
-```
+var jayson = require('jayson');
  
+// create a client
+var client = jayson.client.http({
+  hostname: 'localhost',
+  port: 4040
+});
+ 
+function add(a, b, callback) {
+  client.request('add', [a, b], function(err, response) {
+    if(err) throw err;
+    console.log(response.result);
+    callback(response.result);
+  });
+}
+
+module.exports = {
+  add : add
+}
+```
+### Wtrite a test file
+- open a rpc_client_test.js
+```
+touch rpc_client/rpc_client_test.js
+```
+
+- Import rpc_Client
+```js
+var client = require('./rpc_client');
+
+// invoke 'add'
+
+client.add(1, 2, function(res){
+  console.assert(res == 3);
+});
+```
+- How to test?
+* Open the backend server
+* Execute the rpc_client_test.js
+```
+node rpc_client_test.js
+```
+
+
+## MongoDB
