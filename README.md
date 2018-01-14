@@ -931,11 +931,15 @@ class CloudAMQPClient:
     self.channel = self.connection.channel()
     self.channel.queue_declare(queue = queue_name)
 ```
+- Decode
+```py
+return json.loads(body.decode('utf-8'))
+```
 ### Methods of sending and geting Message
 
 #### SendMessage : transer body from into String
 ```python
-def sendMessage(self, message)
+def sendMessage(self, message):
   self.channel.basic_publish(exchange='',
                              routing_key = self.queue_name,
                              body = json.dumps(message))
@@ -970,4 +974,32 @@ a three-tuple; (None, None, None) if the queue was empty; otherwise (method, pro
 ```py
 def sleep(self, seconds):
     self.connection.sleep(seconds)
+```
+
+### cloudAMQP test
+- Open a test file
+```
+touch utils/couldAMQP_client_test.py
+```
+
+- Import CloudAMQPClient class from client, try test_basic() method with params
+```py
+from cloudAMQP_client import CloudAMQPClient
+
+CloudAMQP_URL = "amqp://xggyaoov:dudqi2kLBrreuJ-tST0uhiUcD3-rWomQ@termite.rmq.cloudamqp.com/xggyaoov"
+TEST_QUEUE_NAME = "test"
+
+def test_basic():
+  client = CloudAMQPClient(CloudAMQP_URL,TEST_QUEUE_NAME )
+
+  sentMsg = {"test":"test"}
+  client.sendMessage(sentMsg)
+
+  reveivedMsg = client.getMessage()
+
+  assert sendMsg == reveivedMsg
+  print("test_basic passed!")
+
+if __name__ == "__main__":
+  test_basic()
 ```
