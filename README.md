@@ -1085,4 +1085,48 @@ def getOneNews():
 import operations
 ```
 
-# Week 3
+# Week 3 News Pipeline
+```
+
+```
+
+* News API
+* New Monitor(Thread) : Through News API to get the latest News URL, run every 10 sec
+* Redis(Save collection News) : To solve the duplicated problems, if it has been collected, we'll ignore that News.
+* RabbitMQ : Receive the accepted News URL from News Monitor and Send it to Web Scrapers
+* Web Scrapers : Receive News URL and scrape the contenct(XPath) from the website
+* RabbitMQ : Receive the New Contents from Web Scrapers
+* NewS Deduper : Receive the scraped News from RabbitMQ and Filter the same contents News by using NLP - TLITF
+
+## Steps
+* 1. News Monitor
+* 2. News Fetcher - XPath
+* 3. News Deduper
+* 4. News Fetcher - thir party package （Replace XPtah)
+
+## Refactor : Let Utils be used by Both Backend Server and Data pipeline
+```
+mkdir common
+mv backend_server/utils/* common/
+mv backend_server/requirements.txt ./
+rmdir backend_server/utils
+```
+- Chagne the path from service.py and operations.py from utils to common
+```py
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+```
+
+## News Monitor
+[News API](https://newsapi.org/)
+
+### Request 
+```
+https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=715e9632a2a94ea1a4546e3f314a76a5
+```
+- source :
+- apiKey : 715e9632a2a94ea1a4546e3f314a76a5
+```
+status": "ok",
+"totalResults": 20,
+-"articles": [ ...
+```
