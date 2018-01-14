@@ -5,10 +5,10 @@ import operations
 
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 
-# import utils packages
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-
-import mongodb_client #pylint: disable = import-error, wrong-import-position
+# import common package in parent directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+# sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+import mongodb_client  # pylint: disable=import-error, wrong-import-position
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 4040
