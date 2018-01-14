@@ -1124,9 +1124,85 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=715e9632a2a94ea1a4546e3f314a76a5
 ```
 - source :
-- apiKey : 715e9632a2a94ea1a4546e3f314a76a5
+- apiKey : 
 ```
 status": "ok",
 "totalResults": 20,
 -"articles": [ ...
 ```
+
+### News API
+```
+touch common/news_api_client.py
+```
+- Install requests and add in requirements.txt
+```
+pip3 install requests
+```
+- getNewsFromSource()
+- private buildUrl
+- DEFAULT_SOURCES / SORT_BY_TOP 
+- Response is a String and we need to transfer it into a JSON and decode into utf-8
+```py
+import requests
+from json import loads
+
+DEFAULT_SOURCES = [CNN]
+CNN = 'cnn'
+SORT_BY_TOP = 'top'
+NEWS_API_KEY = '715e9632a2a94ea1a4546e3f314a76a5'
+NEWS_API_ENDPOINT = "https://newsapi.org/v1/"
+ARTICLES_API = "article"
+
+def _buildUrl(endPoint = NEWS_API_ENDPOINT, apiName = ARTICLES_API):
+    return endPoint + apiName
+ 
+def getNewsFromSource(sources = DEFAULT_SOURCES, sortBy = SORT_BY_TOP):
+    articles = []
+
+    for source in sources:
+        payload = {'apiKey' : NEWS_API_KEY,
+                   'source' : source,
+                   'sourBy' : sortBy} 
+        response = requests.get(_buildUrl(), params = payload)
+        res_json = loads(response.content.decode('utf-8'))
+```
+- To see if the response is vaild
+- status -> ok, source and res_json not None
+- Populate news source into articles : Add Soucre into the result
+```
+.....'publishedAt': '2018-01-14T10:36:26Z', 'source': 'cnn'}]
+```
+
+```py
+ # Extract news from response
+        if (res_json is not None and
+            res_json['status'] == 'ok' and
+            res_json['source'] is not None):
+            # populate news source in each articles.
+            for news in res_json['articles']:
+                news['source'] = res_json['source']
+            articles.extend(res_json['articles'])
+
+    return articles
+```
+
+### News Api test
+- test_basic()
+- use getNewsFromSource, makes sure the ammount of news > 0 and tries another sources
+```py
+import news_api_client as client
+
+def test_basic():
+    news = client.getNewsFromSource()
+    print(news)
+    assert len(news) > 0
+    news = client.getNewsFromSource(sources=['cnn'], sortBy='top')
+    assert len(news) > 0
+    print('test_basic passed!')
+
+if __name__ == "__main__":
+    test_basic()
+```
+
+## News Monitor
