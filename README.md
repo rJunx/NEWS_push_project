@@ -771,3 +771,203 @@ node rpc_client_test.js
 
 
 ## MongoDB
+- Install mongoDB (Since we need to train the data so store in the local side)
+```
+sudo apt-get install -y mongodb-org
+```
+- MongoCli
+[MongoCli](https://docs.mongodb.com/getting-started/shell/client/)
+
+- Run Mongod
+```
+./mongod
+```
+- Run Mongo shell
+```
+./mongo
+```
+
+### Test MongoDB (Crawling in the future)
+- show DB
+```
+show dbs
+```
+- Switch DB
+```
+switched to db top-news
+```
+- See Collections / Tables
+```
+show collections
+show tables
+```
+
+- Query 
+```
+db.news.find
+db.news.fundOne()
+db.news.count()
+```
+### Export - Mongoexport
+- Export db
+```
+./mongoexport --db top-news --collection hews --out demo_news_1.json
+```
+
+### Import Data from JSON file
+- Import db
+```
+mongoimport --db top-news --collection news --file demo_news_1.json
+```
+
+## Backend Connect to MongoDB - pymongo
+[pymongo](https://api.mongodb.com/python/current/)
+- Install pymongo
+```
+pip3 install pymongo
+```
+
+- Set up all dependencies List(likes in NPM we used package.json)
+
+#### Requirements.txt
+```txt
+https://api.mongodb.com/python/current/
+```
+```
+pip3 install -r requirements.txt
+```
+
+### Set up a MongoDB Client
+- open a file utils in backend_server
+```
+mkdir utils
+touch utils/mongodb_client.py
+```
+- Making a Connection with MongoClient and Getting a Database
+
+```py3
+from pymongo import MongoClient
+
+MONGO_DB_HOST = "localhost"
+MONGO_DB_PORT = 27017
+DB_NAME = "test"
+
+client = MongoClient(MONGO_DB_HOST, MONGO_DB_PORT)
+
+def get_db(db = DB_NAME):
+  db = client[db]
+  return db
+```
+#### MongoDB Test
+- Connect to MongoClient to CURD
+- Open Test File
+```
+touch utils/mongodb_client_test.py
+```
+- Set Only when user call test_basic()
+-  db = client.get_db('test')!!!!! used "_"
+
+```py
+import mongodb_client as client
+
+def test_basic():
+  db = client.get_db('test')
+  db.test.drop()
+  assert db.test.count()  == 0
+
+  db.test.insert({'test' : 1})
+  assert db.test.count() == 1
+
+  db.test.drop()
+  assert db.test.count() == 0
+
+  print('test_basic passed!')
+
+if __name__ == "__main__":
+  test_basic()
+```
+
+## CloudAMQP
+### RabbitMQ
+```
+RabbitMQ is a message broker: it accepts and forwards messages. You can think about it as a post office: when you put the mail that you want posting in a post box, you can be sure that Mr. Postman will eventually deliver the mail to your recipient. In this analogy, RabbitMQ is a post box, a post office and a postman.
+
+The major difference between RabbitMQ and the post office is that it doesn't deal with paper, instead it accepts, stores and forwards binary blobs of data ‒ messages.
+```
+## CloudAMQP && Pika
+
+- AMQP URL is the address to receive and send the messages
+
+- Pika to manupulate AMQP
+[pika](https://pika.readthedocs.io/en/0.10.0/) 
+
+[RabbitMQ Pika]
+
+- Install Pika by adding in requirements.txt
+```
+pika
+```
+- Make a file for CloudAMQP client
+```
+touch backend_server/utils/cloudAMQP_client.py
+```
+
+### CloudAMQP
+- String -> JSON -> Serialization
+- Name of Queue based on instance thus we need to create a class
+- Parameters of URL
+- Set a socket timeout
+- Connection by Pika(blocking Connection)
+- Open a Channel for receiving message
+- Declare the channel as queue name
+```py
+class CloudAMQPClient:
+  def __init__(self, cloud_amqp_url, queue_name):
+    self.cloud_amqp_url = cloud_amqp_url
+    self.queue_name = queue_name
+    self.params = pika.URLParameters(cloud_amqp_url)
+    self.params.socket_timeout = 3
+    self.connection = pika.BlockingConnection(self.params)
+    self.channel = self.connection.channel()
+    self.channel.queue_declare(queue = queue_name)
+```
+### Methods of sending and geting Message
+
+#### SendMessage : transer body from into String
+```python
+def sendMessage(self, message)
+  self.channel.basic_publish(exchange='',
+                             routing_key = self.queue_name,
+                             body = json.dumps(message))
+  print("[X] Sent message to %s:%s" %(self.queue_name, message))
+```
+
+#### GetMessage: by "basic_get"
+```
+Get a single message from the AMQP broker. Returns a sequence with the method frame, message properties, and body.
+```
+```
+Returns:	
+a three-tuple; (None, None, None) if the queue was empty; otherwise (method, properties, body); NOTE: body may be None
+```
+- Geive a Delivery tag when everytime broker receive a message and return back from String to JSON
+```py
+  # Get a message
+  def getMessage(self):
+    method_frame, header_frame, body = self.channel.basic_get(self.queue_name)
+    if method_frame:
+      print("[x] Received message from %s:%s" % (self.queue_name, body))
+      self.channel.basic_ack(method_frame.delivery_tag)
+      return json.loads(body)
+    else:
+      print("No message returned.")
+      return None
+```
+
+#### HearBeat
+- BlockingConnection.sleep is a safer way to sleep than time.sleep(). 
+- This will repond to server's heartbeat.
+```py
+def sleep(self, seconds):
+    self.connection.sleep(seconds)
+```
