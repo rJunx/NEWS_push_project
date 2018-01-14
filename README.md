@@ -1003,3 +1003,38 @@ def test_basic():
 if __name__ == "__main__":
   test_basic()
 ```
+
+## API!
+- Test for get one news on service.py
+- import json and package dumps to transfer from BSON to JSON
+- Register server in this RPC Server
+```
+This module provides two helper methods dumps and loads that wrap the native json methods and provide explicit BSON conversion to and from JSON. JSONOptions provides a way to control how JSON is emitted and parsed, with the default being the legacy PyMongo format. json_util can also generate Canonical or Relaxed Extended JSON when CANONICAL_JSON_OPTIONS or RELAXED_JSON_OPTIONS is provided, respectively.
+```
+```py
+import json
+from bson.json_util import dumps
+
+def get_one_news():
+  print("get_one_news is called.")
+  news = mongodb_client.get_db()['news'].find_one()
+  return json.loads(dumps(news))
+
+RPC_SERVER.register_function(get_one_news, 'get_one_news')
+
+
+
+```
+- Import 'utils' (Python file import) to import mongodb_client - use os and sys
+
+```py
+import os
+import sys
+
+# import utils packages
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+import mongodb_client
+```
+
+## Python - Pylint (Coding Style Check)
+[PEP 8 - Style Guide](https://www.python.org/dev/peps/pep-0008/)
