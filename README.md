@@ -794,7 +794,7 @@ show dbs
 ```
 - Switch DB
 ```
-switched to db top-news
+use top-news
 ```
 - See Collections / Tables
 ```
@@ -811,7 +811,7 @@ db.news.count()
 ### Export - Mongoexport
 - Export db
 ```
-./mongoexport --db top-news --collection hews --out demo_news_1.json
+./mongoexport --db top-news --collection news --out demo_news_1.json
 ```
 
 ### Import Data from JSON file
@@ -1038,3 +1038,51 @@ import mongodb_client
 
 ## Python - Pylint (Coding Style Check)
 [PEP 8 - Style Guide](https://www.python.org/dev/peps/pep-0008/)
+- Install PyLint
+```
+pip3 install pylint
+```
+- Analyze Outcomes
+```
+C:  1, 0: Missing module docstring (missing-docstring)
+E: 10, 0: Unable to import 'mongodb_client' (import-error)
+C: 10, 0: Import "import mongodb_client" should be placed at the top of the module (wrong-import-position)
+C: 16, 0: Invalid argument name "a" (invalid-name)
+C: 16, 0: Invalid argument name "b" (invalid-name)
+C: 16, 0: Missing function docstring (missing-docstring)
+C: 20, 0: Missing function docstring (missing-docstring)
+```
+#### How to slove
+* missing-docstring : Add docstring -> """XXX"""
+* import-error: In our case, we need to write an exception to surpass the error
+* wrong-import-position: Need to put on the top
+* invalid-name : couldn't use argument named a -> num1
+* bad-whitespace: 1, 2
+
+## Refactor
+- Get One New need to be put other files to let service become a simple surface just receive the API request
+- open a file "operations.py"
+```py
+import os
+import sys
+import json
+from bson.json_util import dumps
+
+# import utils packages
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+
+import mongodb_client
+
+NEWS_TABLE_NAME = "news"
+
+def getOneNews():
+    db = mongodb_client.get_db()
+    news = db[NEWS_TABLE_NAME].find_one()
+    return json.loads(dumps(news))
+```
+- Import operations in service.pu
+```py
+import operations
+```
+
+# Week 3
