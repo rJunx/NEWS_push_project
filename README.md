@@ -1102,7 +1102,7 @@ import operations
 * 1. News Monitor
 * 2. News Fetcher - XPath
 * 3. News Deduper
-* 4. News Fetcher - thir party package （Replace XPtah)
+* 4. News Fetcher - third party package （Replace XPtah)
 
 ## Refactor : Let Utils be used by Both Backend Server and Data pipeline
 ```
@@ -1336,3 +1336,149 @@ if __name__ == "__main__":
 ```
 
 ## Web Scrapers
+
+### XPath
+- XPath Helper
+```py
+"""//p[contains(@class, 'zn-body__paragraph')]//text() | //div[contains(@class, 'zn-body__paragraph')]//text()"""
+```
+
+### Scrapers
+- Open a scrapers folder and cnn news scraper file
+- Imitate the behaviors of browsers
+* session & header
+* Imitate a real User Agent as a Header
+
+```py
+def extract_news(news_url):
+    session_requests = requests.session()
+    response = session_requests.get(news_url, headers=_get_headers())
+    news = {}
+```
+
+- Get the Header by looping the Mock User Agent File
+
+```py
+def _get_headers():
+    ua = random.choice(USER_AGENTS)
+    headers = {
+      "Connection" : "close", 
+      "User-Agent" : ua
+    }
+    return headers
+```
+- Import html from lxml
+- Used XPATH method by separating it into tree and news from the tree
+- Join the LIST of news together to become a whole STRING
+```py
+from lxml import html
+try:
+        tree = html.fromstring(response.content)
+        news = tree.xpath(GET_CNN_NEWS_XPATH)
+        news = ''.join(news)
+    except Exception:
+        return {}
+
+    return news
+
+```
+
+
+- Grab the Agent info form file and randomly select one of them
+
+```py
+# Load user agents
+USER_AGENTS_FILE = os.path.join(os.path.dirname(__file__), 'user_agents.txt')
+USER_AGENTS = []
+
+with open(USER_AGENTS_FILE, 'rb') as uaf:
+    for ua in uaf.readlines():
+        if ua:
+            USER_AGENTS.append(ua.strip()[1:-1])
+
+random.shuffle(USER_AGENTS)
+```
+
+## Fetcher
+- Take a News Url from Queue(news monitor) and use scraper to get the contents and send it into the next Queue
+- While loop likes Moniter, get a message from scrape_news_queue_client and use handle message
+```py
+while True:
+    if scrape_news_queue_client is not None:
+        msg = scrape_news_queue_client.getMessage()
+        if msg is not None:
+            # Parse and process the task
+            try:
+                handle_message(msg)
+            except Exception as e:
+                print(e)
+                pass
+        scrape_news_queue_client.sleep(SLEEP_TIME_IN_SECONDS)
+```
+- handleMessage()
+```py
+def handle_message(msg):
+    if msg is None or not isinstance(msg, dict):
+        print('message is broken')
+        return
+
+    task = msg
+    text = None
+```
+- Check if the source is from cnn, and extractNews by task['url'] from news scraper and Rewrite the text into task
+
+```py
+    if task['source'] == 'cnn':
+        print('scraping CNN news')
+        text = cnn_news_scraper.extractNews(task['url'])
+    else
+        print('News source [%s] is not supported. ' % task['source'])
+    
+    task['text'] = text
+```
+
+- Send out the task to dedupe Queue
+```py
+    dedupe_news_queue_client.sendMessage(task)
+```
+- Import os,sys and the CloudAMQP CLIENT
+```py
+import os
+import sys
+
+
+# import common package in parent directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+
+from cloudAMQP_client import CloudAMQPClient
+
+DEDUPE_NEWS_TASK_QUEUE_URL = 
+DEDUPE_NEWS_TASK_QUEUE_NAME = "top-new-DEDUPE_NEWS_TASK_QUEUE_NAME"
+SCRAPE_NEWS_TASK_QUEUE_URL = "
+SCRAPE_NEWS_TASK_QUEUE_NAME = "top-news-SCRAPE_NEWS_TASK_QUEUE"
+
+SLEEP_TIME_IN_SECONDS = 5
+
+dedupe_news_queue_client = CloudAMQPClient(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NEWS_TASK_QUEUE_NAME)
+scrape_news_queue_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
+```
+
+## How to TEST
+- Clear Redis
+```
+redis-cli flushall
+```
+- Queue_helper (if needed)
+```
+python3 queue_helper.py
+```
+- Get News URL From News Api (Faster)
+```
+python3 news_monitor.py
+```
+- Get News URL and Scrape on website
+```
+python3 news_fetcher.py
+```
+
+## DeDuper 重複數據刪除 - TFITF 
