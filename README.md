@@ -1258,6 +1258,8 @@ redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT)
 "publishedAt": "2018-01-14T20:17:50Z"
 ```
 ```py
+   import datetime
+   
     for news in news_list:
         news_diget = hashlib.md5(news['title'].encode('utf-8')).hexdigest()
         # Connect with Redis and check if it's in Redis
@@ -1290,11 +1292,47 @@ cloudAMQP_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_
     print("Fetched %d news." % number_of_news)
 
     cloudAMQP_client.sleep(SLEEP_TIME_IN_SECOND)
-
 ```
 
 
-## Stock in cloudAMQP Problems!(Cloudn't use the URL)
+### Stock in cloudAMQP Problems!(Cloudn't use the URL)
 ```
 pika.exceptions.ProbableAuthenticationError: (403, 'ACCESS_REFUSED - Login was refused using authentication mechanism PLAIN. For details see the broker logfile.')
 ```
+
+### Tool for Clearn Queue
+```py
+import os
+import sys
+
+# import common package in parent directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+
+from cloudAMQP_client import CloudAMQPClient
+
+SCRAPE_NEWS_TASK_QUEUE_URL = "amqp://cbzkwlek:4louH2OEYrE66kGmwv8RmLiOC2JZyhSi@donkey.rmq.cloudamqp.com/cbzkwlek"
+SCRAPE_NEWS_TASK_QUEUE_NAME = "top-news-SCRAPE_NEWS_TASK_QUEUE"
+
+# DEDUPE_NEWS_TASK_QUEUE_URL = #TODO: use your own config.
+# DEDUPE_NEWS_TASK_QUEUE_NAME = #TODO: use your own config.
+
+def clearQueue(queue_url, queue_name):
+    scrape_news_queue_client = CloudAMQPClient(queue_url, queue_name)
+
+    num_of_messages = 0
+
+    while True:
+        if scrape_news_queue_client is not None:
+            msg = scrape_news_queue_client.getMessage()
+            if msg is None:
+                print("Cleared %d messages." % num_of_messages)
+                return
+            num_of_messages += 1
+
+
+if __name__ == "__main__":
+    clearQueue(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
+    # clearQueue(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NEWS_TASK_QUEUE_NAME)
+```
+
+## Web Scrapers
