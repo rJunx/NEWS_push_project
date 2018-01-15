@@ -2,6 +2,8 @@ import os
 import random
 import requests
 
+from lxml import html
+
 GET_CNN_NEWS_XPATH = """//p[contains(@class, 'zn-body__paragraph')]//text() | //div[contains(@class, 'zn-body__paragraph')]//text()"""
 
 # Load user agents
@@ -16,7 +18,7 @@ with open(USER_AGENTS_FILE, 'rb') as uaf:
 random.shuffle(USER_AGENTS)
 
 
-def getHeader():
+def _get_headers():
     ua = random.choice(USER_AGENTS)
     headers = {
       "Connection" : "close", 
