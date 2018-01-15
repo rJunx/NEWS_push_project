@@ -1493,4 +1493,27 @@ pip3 install numpy
 pip3 install scipy
 pip3 install python-dateutil
 ```
+### TFIDF Vectorizer - Test
+```py
+from sklearn.feature_extraction.text import TfidfVectorizer
 
+doc1 = "I like apples. I like oranges too"
+doc2 = "I love apples. I hate doctors"
+doc3 = "An apple a day keeps the doctor away"
+doc4 = "Never compare an apple to an orang"
+
+documents = [doc1, doc2, doc3, doc4]
+
+tfidf = TfidfVectorizer().fit_transform(documents)
+pairwise_sim = tfidf * tfidf.T
+
+print(pairwise_sim.A)
+```
+- Outcomes :
+```
+[[ 1.          0.12693309  0.          0.        ]
+ [ 0.12693309  1.          0.          0.        ]
+ [ 0.          0.          1.          0.27993128]
+ [ 0.          0.          0.27993128  1.        ]]
+ ```
+### If the number > 0.8 , we could recognize those news as the same an just ignore them

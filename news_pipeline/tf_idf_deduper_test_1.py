@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 doc1 = "I like apples. I like oranges too"
-doc2 = "I love apples. I hate doctors"
+doc2 = "I like apples. I like doctors"
 doc3 = "An apple a day keeps the doctor away"
 doc4 = "Never compare an apple to an orang"
 
