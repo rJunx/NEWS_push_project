@@ -1206,3 +1206,95 @@ if __name__ == "__main__":
 ```
 
 ## News Monitor
+- Connect with Redis
+- Connect with RebbitMQ
+- Connect with News API
+
+### Redis
+- Install Redis
+```
+pip3 install redis
+```
+- News Monitor
+- number_of_news to record the number of news
+
+- Record: title / description / text / url / author / source / publishedAt:date / urlToImage / class / digest
+
+- What digest to be used? To see if there is a dupilcate in Redis by transfering Digest into a Hashlib which could save the space in Redis
+- Others, we could use it in React Frontend
+- Add back digest to News JSON
+```py
+"""News Monitor"""
+import hashlib
+import redis
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import news_api_client
+
+NEWS_SOURCES = "cnn"
+
+while True:
+    news_list = news_api_client.getNewsFromSource(NEWS_SOURCES)
+
+    number_of_news = 0
+
+    for news in news_list:
+        news_diget = hashlib.md5(news['title'].encode('utf-8')).hexdigest()
+```
+
+- Connect Redis and use it to find if there is in Redis or not
+```py3
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT)
+
+  if redis_client.get(news_digest) is None:
+      number_of_news += 1
+```
+- Deal with the publishAt problems. Since some news didn't get the publishAt data but we need that to sort the News. Thus, we use the datetime we got that news to represent the publishAt time
+```
+"publishedAt": "2018-01-14T20:17:50Z"
+```
+```py
+    for news in news_list:
+        news_diget = hashlib.md5(news['title'].encode('utf-8')).hexdigest()
+        # Connect with Redis and check if it's in Redis
+        if redis_client.get(news_digest) is None:
+            number_of_news += 1
+            # Deal with publishAt problems
+            if news['publishedAt'] is None:
+                news['publishedAt'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            # Save into Redis
+            redis_client.set(news_digest, "True")
+            redis_client.expire(news_digest, NEWS_TIME_OUT_IN_SECONDS)
+```
+
+## Sned to RabbitMQ (CloudAMQP Client)
+- init and import CloudAMQP Client
+- Need to apply anotehr QUEUE different from TEST URL
+```py
+
+from cloudAMQP_client import CloudAMQPClient
+
+SCRAPE_NEWS_TASK_QUEUE_URL = 
+SCRAPE_NEWS_TASK_QUEUE_NAME = "top-news-scrape-news-task-queue"
+
+SLEEP_TIME_IN_SECOND = 10
+cloudAMQP_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
+
+            # Send Tasks to cloudAMQP
+            cloudAMQP_client.sendMessage(news)
+
+    print("Fetched %d news." % number_of_news)
+
+    cloudAMQP_client.sleep(SLEEP_TIME_IN_SECOND)
+
+```
+
+
+## Stock in cloudAMQP Problems!(Cloudn't use the URL)
+```
+pika.exceptions.ProbableAuthenticationError: (403, 'ACCESS_REFUSED - Login was refused using authentication mechanism PLAIN. For details see the broker logfile.')
+```
