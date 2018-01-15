@@ -7,11 +7,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 from cloudAMQP_client import CloudAMQPClient
 
-SCRAPE_NEWS_TASK_QUEUE_URL = "amqp://cbzkwlek:4louH2OEYrE66kGmwv8RmLiOC2JZyhSi@donkey.rmq.cloudamqp.com/cbzkwlek"
-SCRAPE_NEWS_TASK_QUEUE_NAME = "top-news-SCRAPE_NEWS_TASK_QUEUE"
-
-DEDUPE_NEWS_TASK_QUEUE_URL = "amqp://kkpdcont:y8uur_wpyzLSX9G4eTYShqEbCWCud8rx@donkey.rmq.cloudamqp.com/kkpdcont"
+DEDUPE_NEWS_TASK_QUEUE_URL = "amqp://mycayzfr:E4nnofIrEfvgW4oByDmkoBjvsmobCzFG@termite.rmq.cloudamqp.com/mycayzfr"
 DEDUPE_NEWS_TASK_QUEUE_NAME = "top-new-DEDUPE_NEWS_TASK_QUEUE_NAME"
+SCRAPE_NEWS_TASK_QUEUE_URL = "amqp://oibmmghn:sKrkMTtm55KnbDfURC0ouVbuF06pQigw@termite.rmq.cloudamqp.com/oibmmghn"
+SCRAPE_NEWS_TASK_QUEUE_NAME = "top-news-SCRAPE_NEWS_TASK_QUEUE"
 
 def clearQueue(queue_url, queue_name):
     scrape_news_queue_client = CloudAMQPClient(queue_url, queue_name)

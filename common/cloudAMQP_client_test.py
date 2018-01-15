@@ -1,6 +1,6 @@
 from cloudAMQP_client import CloudAMQPClient
 
-CloudAMQP_URL = "amqp://kkpdcont:y8uur_wpyzLSX9G4eTYShqEbCWCud8rx@donkey.rmq.cloudamqp.com/kkpdcont"
+CloudAMQP_URL = "amqp://mycayzfr:E4nnofIrEfvgW4oByDmkoBjvsmobCzFG@termite.rmq.cloudamqp.com/mycayzfr"
 TEST_QUEUE_NAME = "test"
 
 def test_basic():

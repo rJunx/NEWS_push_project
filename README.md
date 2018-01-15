@@ -1482,3 +1482,15 @@ python3 news_fetcher.py
 ```
 
 ## DeDuper 重複數據刪除 - TFITF 
+### sklearn - Python Package for ML
+- With the dependencies:
+- numpy
+- scipy
+- python-dateutil : Judge the News published date to compare
+```
+pip3 install sklearn
+pip3 install numpy
+pip3 install scipy
+pip3 install python-dateutil
+```
+

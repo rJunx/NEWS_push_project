@@ -1,5 +1,9 @@
 jsonrpclib-pelix
-pymongo
+numpy
 pika
-requests
+pymongo
+python-dateutil
 redis
+requests
+scipy
+sklearn
