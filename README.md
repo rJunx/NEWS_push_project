@@ -1597,3 +1597,37 @@ if same_day_news_list is not None and len(same_day_news_list) > 0:
 
     db[NEWS_TABLE_NAME].replace_one({'digest': task['digest']}, task, upsert=True)
 ```
+
+## Newspaper 3k - Python Library
+[Newspaper3k](https://github.com/codelucas/newspaper)
+- Used this library insteads of our scraper
+- Since if we would like to get the news from different sources, we need to analyze each pages and get the structure of XPath
+```
+ pip3 install newspaper3k
+```
+### Change the News Fetcher
+```py
+from newspaper import Article
+
+    article = Article(task['url'])
+    article.download()
+    article.parse()
+    task['text'] = article.text
+```
+
+### Change the source when could save in News Monitor
+```py
+NEWS_SOURCES = [
+    'bbc-news',
+    'bbc-sport',
+    'bloomberg',
+    'cnn',
+    'entertainment-weekly',
+    'espn',
+    'ign',
+    'techcrunch',
+    'the-new-york-times',
+    'the-wall-street-journal',
+    'the-washington-post'
+]
+```

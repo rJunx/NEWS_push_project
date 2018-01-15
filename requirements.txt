@@ -1,4 +1,5 @@
 jsonrpclib-pelix
+newspaper3k
 numpy
 pika
 pymongo
