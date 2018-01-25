@@ -1633,7 +1633,7 @@ NEWS_SOURCES = [
 ```
 
 # Week 4 
-- Jupyter : Docker
+- Jupyter : On Docker
 - Build a CNN Model
 - Trainer
 - Server
@@ -1671,8 +1671,320 @@ df = pd.read_csv(DATA_SET_FILE, header=None)
 print(df[3])
 ```
 
-### Statistics
+#### Statistics
 Let's first take a look at our data from a statistics perspective.
 
 > We can use pandas to do a quick 
 (data analysis)[http://machinelearningmastery.com/quick-and-dirty-data-analysis-with-pandas/] 
+
+- In order to see the distribution of data.
+- We need to get to know more about our data by quick analysising it using pandas.
+
+```py
+import pandas as pd
+
+DATA_SET_FILE = './labeled_news.csv'
+
+df = pd.read_csv(DATA_SET_FILE, header=None)
+
+
+print("class description")
+print(df[0].describe())
+
+print("""
+
+=====================
+
+""")
+
+print("source description")
+print(df[3].describe())
+```
+
+```
+class description
+count    545.000000
+
+source description
+count     545
+unique     13
+top       cnn
+freq      132
+Name: 3, dtype: object
+```
+#### Source Distribution
+```py
+df[3].value_counts().plot(kind="bar")
+```
+
+## Build a CNN Model
+
+
+### Vocabulary Embedding
+- Tensorflow provides a easy-to-use tool to do embedding.
+- One example:
+```
+    Sentence 1: "I like apple"
+    Sentence 2: "I like banana"
+    Sentence 3: "I eat apple"
+```
+- We scan all 3 sentences then we found there are 5 unique words:
+
+```
+    ['I', 'like', 'eat', 'apple', 'banana']
+Now we can use number to represent each of them:
+
+    [0, 1, 2, 3, 4]
+So, the three sentences can be encoded into:
+
+    Sentence 1: [0, 1, 3]
+    Sentence 2: [0, 1, 4]
+    Sentence 3: [0, 2, 3]
+```
+
+#### VocabularyProcessor
+- Tensorflow provides a easy-to-use tool to do embedding.
+```py
+import numpy as np
+import tensorflow as tf
+
+MAX_DOCUMENT_LENGTH = 5
+
+vocab_processor = tf.contrib.learn.preprocessing.VocabularyProcessor(MAX_DOCUMENT_LENGTH)
+
+# fit and transform
+sentences = [
+    "I like apple",
+    "I like banana",
+    "I eat apple"
+]
+
+embedded_sentences = np.array(list(vocab_processor.fit_transform(sentences)))
+print(embedded_sentences)
+
+print('Total unique words: %d' % len(vocab_processor.vocabulary_))
+
+print("")
+# just fit: unseen words will be interpreted as 0
+new_sentences = [
+    "This is a brand new sentence which we never seen before and is very long",
+    "I hate doing homework!",
+    "I like banana",
+    "I eat apple"
+]
+
+new_embedded_sentences = np.array(list(vocab_processor.transform(new_sentences)))
+print(new_embedded_sentences)
+```
+- Result : Total unique words: 6
+```
+[[1 2 3 0 0]
+ [1 2 4 0 0]
+ [1 5 3 0 0]]
+Total unique words: 6
+
+[[0 0 0 0 0]
+ [1 0 0 0 0]
+ [1 2 4 0 0]
+ [1 5 3 0 0]]
+```
+
+### One-hot Embedding
+We have converted the string into an integer vector. But that is not good enough. We need to convert a word into one-hot vector:
+```
+Assume we only have 10 unique words.
+
+    0 -> [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    1 -> [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+    2 -> [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    3 -> [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+    4 -> [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    5 -> [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    6 -> [0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+    7 -> [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    8 -> [0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+    9 -> [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+```
+
+Thus, one setence is converted into a matrix:
+
+```
+Assume there are only 5 unique words:
+
+    "I like apple" 
+-> 
+    [1 2 3 0 0] 
+->
+    [
+        [0, 1, 0, 0, 0],  => I
+        [0, 0, 1, 0, 0],  => like
+        [0, 0, 0, 1, 0],  => apple
+        [1, 0, 0, 0, 0],  => padding
+        [1, 0, 0, 0, 0]   => padding
+    ]
+```
+
+#### Tensorflow embed_sequence
+Tensorflow provides tf.contrib.layers.embed_sequence which can help use with one-hot embedding. 
+
+In real world, we don't use native [0, 1] way to label a word, but use a real number.
+
+```py
+import tensorflow as tf
+
+vocab_size = 6
+embed_dim =  3
+
+sentences = [
+    [1, 2, 3, 0, 0]
+]
+embedded_setences = tf.contrib.layers.embed_sequence(sentences, vocab_size, embed_dim)
+
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    result = sess.run(embedded_setences)
+    print(result)
+```
+
+## Convolutional Neural Networks (CNNs)
+We cannot dive deep into what is convolution here. 
+
+But here is a great article about CNNs for NLP:
+http://www.wildml.com/2015/11/understanding-convolutional-neural-networks-for-nlp/
+
+### Convolution
+![image](http://deeplearning.stanford.edu/wiki/images/6/6c/Convolution_schematic.gif)
+
+### Pooling
+![image](http://d3kbpzbmcynnmx.cloudfront.net/wp-content/uploads/2015/11/Screen-Shot-2015-11-05-at-2.18.38-PM.png)
+
+## Put Eveyrthing Together
+```py
+# -*- coding: utf-8 -*-
+
+import numpy as np
+import os
+import pandas as pd
+import pickle
+import shutil
+import tensorflow as tf
+
+
+from sklearn import metrics
+
+learn = tf.contrib.learn
+
+DATA_SET_FILE = './labeled_news.csv'
+
+MAX_DOCUMENT_LENGTH = 500
+N_CLASSES = 8
+
+
+EMBEDDING_SIZE = 100
+N_FILTERS = 10
+WINDOW_SIZE = 10
+FILTER_SHAPE1 = [WINDOW_SIZE, EMBEDDING_SIZE]
+FILTER_SHAPE2 = [WINDOW_SIZE, N_FILTERS]
+POOLING_WINDOW = 4
+POOLING_STRIDE = 2
+
+LEARNING_RATE = 0.01
+STEPS = 200
+
+def generate_cnn_model(n_classes, n_words):
+    """2 layer CNN to predict from sequence of words to a class."""
+    def cnn_model(features, target):
+        # Convert indexes of words into embeddings.
+        # This creates embeddings matrix of [n_words, EMBEDDING_SIZE] and then
+        # maps word indexes of the sequence into [batch_size, sequence_length,
+        # EMBEDDING_SIZE].
+
+        target = tf.one_hot(target, n_classes, 1, 0)
+        word_vectors = tf.contrib.layers.embed_sequence(
+            features, vocab_size=n_words, embed_dim=EMBEDDING_SIZE, scope='words')
+
+        word_vectors = tf.expand_dims(word_vectors, 3)
+        
+        with tf.variable_scope('CNN_layer1'):
+            # Apply Convolution filtering on input sequence.
+            conv1 = tf.contrib.layers.convolution2d(
+                word_vectors, N_FILTERS, FILTER_SHAPE1, padding='VALID')
+            # Add a RELU for non linearity.
+            conv1 = tf.nn.relu(conv1)
+            # Max pooling across output of Convolution+Relu.
+            pool1 = tf.nn.max_pool(
+                conv1,
+                ksize=[1, POOLING_WINDOW, 1, 1],
+                strides=[1, POOLING_STRIDE, 1, 1],
+                padding='SAME')
+            # Transpose matrix so that n_filters from convolution becomes width.
+            pool1 = tf.transpose(pool1, [0, 1, 3, 2])
+      
+        with tf.variable_scope('CNN_layer2'):
+            # Second level of convolution filtering.
+            conv2 = tf.contrib.layers.convolution2d(
+                pool1, N_FILTERS, FILTER_SHAPE2, padding='VALID')
+            # Max across each filter to get useful features for classification.
+            pool2 = tf.squeeze(tf.reduce_max(conv2, 1), squeeze_dims=[1])
+
+        # Apply regular WX + B and classification.
+        logits = tf.contrib.layers.fully_connected(pool2, n_classes, activation_fn=None)
+        loss = tf.contrib.losses.softmax_cross_entropy(logits, target)
+
+        train_op = tf.contrib.layers.optimize_loss(
+          loss,
+          tf.contrib.framework.get_global_step(),
+          optimizer='Adam',
+          learning_rate=LEARNING_RATE)
+
+        return ({
+          'class': tf.argmax(logits, 1),
+          'prob': tf.nn.softmax(logits)
+        }, loss, train_op)
+
+    return cnn_model
+
+
+def main(unused_argv):
+    # Prepare training and testing data
+    df = pd.read_csv(DATA_SET_FILE, header=None)
+
+    # Random shuffle
+    df.sample(frac=1)
+
+    train_df = df[0:450]
+    test_df = df.drop(train_df.index)
+
+    # x - news title, y - class
+    x_train = train_df[1]
+    y_train = train_df[0]
+    x_test = test_df[1]
+    y_test = test_df[0]
+
+    # Process vocabulary
+    vocab_processor = learn.preprocessing.VocabularyProcessor(MAX_DOCUMENT_LENGTH)
+    x_train = np.array(list(vocab_processor.fit_transform(x_train)))
+    x_test = np.array(list(vocab_processor.transform(x_test)))
+
+    n_words = len(vocab_processor.vocabulary_)
+    print('Total words: %d' % n_words)
+  
+    # Build model
+    classifier = learn.Estimator(
+        model_fn=generate_cnn_model(N_CLASSES, n_words))
+
+    # Train and predict
+    classifier.fit(x_train, y_train, steps=STEPS)
+
+    # Evaluate model
+    y_predicted = [
+        p['class'] for p in classifier.predict(x_test, as_iterable=True)
+    ]
+    print(y_predicted)
+
+    score = metrics.accuracy_score(y_test, y_predicted)
+    print('Accuracy: {0:f}'.format(score))
+
+if __name__ == '__main__':
+    tf.app.run(main=main)
+```
