@@ -1631,3 +1631,48 @@ NEWS_SOURCES = [
     'the-washington-post'
 ]
 ```
+
+# Week 4 
+- Jupyter : Docker
+- Build a CNN Model
+- Trainer
+- Server
+- Integration with News Pipeline
+
+## Jupyter
+## Data Format
+- We will use 500 news with labeled topic to train our model. The format of the data is
+```
+[#class_number],[news_title],[news_description],[news_source]
+```
+- An Example:
+
+```
+3,Trump: Netanyahu should 'hold back' on settlements,"President Donald Trump told Israeli Prime Minister Benjamin Netanyahu Wednesday that the US is going to push for a peace deal with the Palestinians and asked Israel ""to hold back"" on settlement construction.",cnn
+```
+### 8 Classes:
+-  1: "World",
+-  2: "US",
+-  3: "Business",
+-  4: "Technology",
+-  5: "Entertainment",
+-  6: "Sports",
+-  7: "Health",
+-  8: "Crime"
+
+### See the Sorce : by pandas
+```py
+import pandas as pd
+
+DATA_SET_FILE = './labeled_news.csv'
+
+df = pd.read_csv(DATA_SET_FILE, header=None)
+
+print(df[3])
+```
+
+### Statistics
+Let's first take a look at our data from a statistics perspective.
+
+> We can use pandas to do a quick 
+(data analysis)[http://machinelearningmastery.com/quick-and-dirty-data-analysis-with-pandas/] 
