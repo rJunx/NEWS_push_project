@@ -1631,6 +1631,113 @@ NEWS_SOURCES = [
     'the-washington-post'
 ]
 ```
+***
+
+# Week 3 - 2 Backend
+- Pagination
+- Preference Model
+- Click Log Processor
+
+## Pagination 
+- process of dividing a document into discrete pages
+- User doesn't need all data
+- User cannot handle too much data
+- System cannot handle too much data
+- User cannnot wait too long(or browser freeze)
+
+### Client - Side Pagination
+- No change on backend: backend sends all data to client
+- Pro: easy as no backend assistance
+- Cons: client would be slow due to I/O and memory consumption
+- 第一次就把所有新聞傳給用戶，針對Client端的數據做Slice呈現
+
+### Server - Side Pagination
+- Server sneds paginated data to client
+- Pros: much better user experience
+- Cons: Extra work and storage on backend; Need coordination between client and server
+- Client每次發送請求時需要帶有Page Number，每次從Server端的臨時存儲區提取data(為什麼要放在cache？因為有推薦系統，每位用戶的Lists不同)，對於Server端要額外開啟一個redis，很有壓力
+
+# Backend Server (Web Server doesn't deal with business Logic)
+
+- new Function
+- api used _ , in opeartion funcion used camelCase
+```py
+def get_news_summaries_for_user(user_id, page_num):
+    print("get_news_summaries_for_user is called with %s and %s" %(user_id, page_num))
+    return operations.getNewsSummaries(user_id, page_num)
+```
+
+## Operations.py
+- used pickle : make JSON(dic) becomes the String that could be read by Redis
+```py
+
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+
+redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
+```
+
+- Need a reide to store News (with begin index)
+- NEWS_LIST_BATCH_SIZE = 10 means the number of news sent everytime when client requests
+- If the News isn't in the redis, go searching in MongoDB and give a new limit by sort News depends on 'publishedAt;
+- pickle.dump to transfer digest (As a key to search in MongoDB)
+```py
+    page_num = int(page_num)
+    begin_index = (page_num - 1) * NEWS_LIST_BATCH_SIZE
+    end_index = page_num * NEWS_LIST_BATCH_SIZE
+
+    sliced_news = []
+```
+
+### If News had already in Redis
+
+```py
+ if redis_client.get(user_id) is not None:
+        total_new_digests = pickle.loads(redis_client.get(user_id))
+        sliced_news_digests = total_new_digests[begin_index:end_index]
+        db = mongodb_client.get_db()
+        sliced_news = list(db[NEWS_TABLE_NAME].find({'digest' : {'$in': sliced_news_digests}}))
+```
+### If News didn't not in Redis
+```py
+    else:
+        db = mongodb_client.get_db()
+        total_news = list(db[NEWS_TABLE_NAME].find().sort([('publishedAt', -1)]).limit(NEWS_LIMIT))
+        total_news_digest = [x['digest'] for x in total_news]
+        redis_client.set(user_id, pickle.dumps(total_news_digest))
+        redis_client.expire(user_id, USER_NEWS_TIME_OUT_IN_SECONDS)
+
+        sliced_news = total_news[begin_index:end_index]
+```
+
+### Operations Test
+- Test if it could request the News
+```py
+def test_getNewsSummariesForUser_basic():
+    news = operations.getNewsSummariesForUser('test', 1)
+    assert len(news) > 0
+    print('test_getNewsSummariesForUser_basic passed')
+```
+- Test the pagination : If page 1 and 2 could be requested and If there is the same digest of News appeared in two pages(fail)
+```py
+def test_getNewsSummariesForUser_pagination():
+    news_page_1 = operations.getNewsSummariesForUser('test', 1)
+    news_page_2 = operations.getNewsSummariesForUser('test', 2)
+
+    assert len(news_page_1) > 0
+    assert len(news_page_2) > 0 
+
+    digests_page_1_set = set(news['digest'] for news in news_page_1)
+    digests_page_2_set = set(news['digest'] for news in news_page_2)
+
+    assert len(digests_page_1_set.intersection(digests_page_2_set)) == 0
+
+    print('test_getNewsSummariesForUser_pagination passed')
+```  
+
+
+
+***
 
 # Week 4 
 - Jupyter : On Docker
@@ -1987,4 +2094,13 @@ def main(unused_argv):
 
 if __name__ == '__main__':
     tf.app.run(main=main)
+```
+
+## News Topic Modeling Server
+```
+cp -r week7/ week8
+```
+
+```
+mkdir 
 ```
