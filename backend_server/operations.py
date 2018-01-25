@@ -17,6 +17,11 @@ NEWS_LIMIT = 200
 USER_NEWS_TIME_OUT_IN_SECONDS = 60
 
 
+REDIS_HOST = "localhost"
+REDIS_PORT = 6379
+
+redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT, db=0)
+
 def getOneNews():
     db = mongodb_client.get_db()
     news = db[NEWS_TABLE_NAME].find_one()
