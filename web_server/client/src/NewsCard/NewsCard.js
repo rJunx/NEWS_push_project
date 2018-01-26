@@ -1,12 +1,28 @@
 import React from 'react';
 import 'materialize-css/dist/css/materialize.min.css';
 import './NewsCard.css';
+import Auth from '../Auth/Auth';
 
 class NewsCard extends React.Component {
   
   redirectToUrl(url, event) {
     event.preventDefault();
+    this.sendClickLog();
     window.open(url, '_blank');
+  }
+
+  sendClickLog() {
+    const url = 'http://' + window.location.hostname + ':3000' +
+        '/news/userId/' + Auth.getEmail() + '/newsId/' + this.props.news.digest;
+
+    const request = new Request(
+      encodeURI(url),
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'bearer ' + Auth.getToken()},
+      });
+
+    fetch(request);
   }
   
   render() {
