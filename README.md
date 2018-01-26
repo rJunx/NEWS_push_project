@@ -1865,7 +1865,353 @@ If User Clicks a news whoses topic is "Sport"
 |Entertainment| 0.264 |
 | World|0.264 |
 
+- Then, we could depend how to show those lists to our user
 
+## Click Log Processor - Modify the model by User Clicks
+- Log then analyzing later / Real Time event
+#### Why we need this?
+- Understand user's behavior
+- Improve UI experience
+- A/B Test
+- Pre-load / Pre-fetch
+- Future product
+
+### Why using a separate processor?
+- Click log processing is not necessarily a synchronized step. (發進RabbitMQ中，不需要是一個blocking的操作，本身只需要紀錄行為不需要返回值，非緊急需要處理的事情先放入Queue中)
+- Don't let backend service directly Load In a MongoDB to process Recommendation, we build up another Recommendation Service. (對於Backend Server來說，不需要知道DB內是如何存取Model的或是用哪種模型得到結果的，只要得到一個Topic List和preference)
+- 如果讓Backend Server直接聯繫DB，DB中Model的調整與修改就會影響到Backend Server，增加多於修改的工作，所以用一個Recommendation Service來傳遞DB內的資料和結果
+- Recommendation Service Client & Recommendation Service
+
+
+```
+Client
+  |  logNewsClickForUser(news_id, user_id)
+ Web
+Server
+  |   logNewsClickForUser(news_id, user_id)
+Backend
+Server --------------------------  Recommendation
+  |      getPreferenceForUser      Service Client
+Click                                     |
+Logger  Send CLick Log mes:               |
+Queue   {news_id, user_id}                |
+  |                                       |
+ClickLogProcessor                         |
+in DB       -----------  DB ------   Recommdndation
+:                                       Service
+( Handle click Log event:
+ Update preference model )
+```
+
+## Log Processer
+### Client - Web Server / Client /  NewsCard
+- POST a event to backend
+- Authorization : Need to have a token, not everyone could send event to backend
+- Fetch : Send out the request
+
+```js
+  redirectToUrl(url, event) {
+    event.preventDefault();
+    this.sendClickLog();
+
+ sendClickLog() {
+    const url = 'http://' + window.location.hostname + ':3000' +
+        '/news/userId/' + Auth.getEmail() + '/newsId/' + this.props.news.digest;
+
+    const request = new Request(
+      encodeURI(url),
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'bearer ' + Auth.getToken()},
+      });
+
+    fetch(request);
+  }
+```
+### Web Server / Server / RPC Client
+- Make a new Function
+- no need a callback
+- Export the function
+```js
+function logNewsClickForUser(user_id, news_id) {
+  client.request('logNewsClickForUser', [user_id, news_id], function(err, response){
+    if(err) throw err;
+    console.log(response.result);
+  });
+}
+
+module.exports = {
+  add : add,
+  getNewsSummariesForUser: getNewsSummariesForUser,
+  logNewsClickForUser : logNewsClickForUser
+}
+```
+
+#### Test Rpc Client
+- Need to wait until we finish RPC server(python) Backend server
+```js
+client.logNewsClickForUser('test_user', 'test_news');
+```
+
+#### Add a Router connect rpc_client and rpc server
+- news.js
+- post request
+```js
+router.post('/userId/:userId/newsId/:newsId', function(req, res, next) {
+  console.log('Logging news click...');
+  user_id = req.params['userId'];
+  newsId = req.params['newsId'];
+
+  rpc_client.logNewsClickForUser(user_id, newsId);
+  res.status(200);
+});
+```
+
+### Backend Server
+- service.py
+```py
+def log_news_click_for_user(user_id, news_id):
+    print("log_news_click_for_user is called with %s and %s" %(user_id, news_id))
+    return operations.logNewsClickForUser(user_id, news_id)
+```
+- operations.py
+- Strinlization 
+- Give another queue to save the Reference data
+
+```py
+LOG_CLICKS_TASK_QUEUE_URL = #TODO: use your own config.
+LOG_CLICKS_TASK_QUEUE_NAME = "tap-news-log-clicks-task-queue"
+```
+
+```py
+def logNewsClickForUser(user_id, news_id):
+    # Send log task to machine learning service for prediction
+    message = {'userId': user_id, 'newsId': news_id, 'timestamp': str(datetime.utcnow())}
+    cloudAMQP_client.sendMessage(message);
+```
+## Recommendation Service
+### Click Logger Processor
+```
+mkdir recommendation_service
+code click_log_processor.py
+```
+- Take a message from Queue each time
+```py
+def run():
+    while True:
+        if cloudAMQP_client is not None:
+            msg = cloudAMQP_client.getMessage()
+            if msg is not None:
+                # Parse and process the task
+                try:
+                    handle_message(msg)
+                except Exception as e:
+                    print(e)
+                    pass
+            # Remove this if this becomes a bottleneck.
+            cloudAMQP_client.sleep(SLEEP_TIME_IN_SECONDS)
+```
+#### Handle message
+- Update user's preference into User preference Model Table
+```py
+PREFERENCE_MODEL_TABLE_NAME = "user_preference_model"
+
+db = mongodb_client.get_db()
+    model = db[PREFERENCE_MODEL_TABLE_NAME].find_one({'userId': userId})
+```
+- Init: Create a new Table with same perference rate
+```py
+ if model is None:
+        print('Creating preference model for new user: %s' % userId)
+        new_model = {'userId' : userId}
+        preference = {}
+        for i in news_classes.classes:
+            preference[i] = float(INITIAL_P)
+        new_model['preference'] = preference
+        model = new_model
+
+    print('Updating preference model for new user: %s' % userId)
+```
+- If user's preference table has already been created, just update the modle
+- Class was made by TensorFlow 
+```py
+    news = db[NEWS_TABLE_NAME].find_one({'digest': newsId})
+    if (news is None
+        or 'class' not in news
+        or news['class'] not in news_classes.classes):
+        
+        print('Skipping processing...')
+        return
+    
+    click_class = news['class']
+```
+
+### Update the Table
+```py
+   # Update the clicked one.
+    old_p = model['preference'][click_class]
+    model['preference'][click_class] = float((1 - ALPHA) * old_p + ALPHA)
+
+    # Update not clicked classes.
+    for i, prob in model['preference'].items():
+        if not i == click_class:
+            model['preference'][i] = float((1 - ALPHA) * model['preference'][i])
+
+    print(model)
+    db[PREFERENCE_MODEL_TABLE_NAME].replace_one({'userId': userId}, model, upsert=True)
+```
+
+## news_Classes - JSON dictionary (List) about all topics
+```
+NUM_OF_CLASSES = 8
+=================
+for i in news_classes.classes:
+```
+- The length of Lists need to be the same as Classes number
+```py
+classes = [
+    "World",
+    "US",
+    "Business",
+    "Technology",
+    "Entertainment",
+    "Sports",
+    "Health",
+    "Crime",
+]
+```
+### Test
+- Create a message
+- Drop userId and make sure the DB is clean
+
+```py
+import click_log_processor
+import os
+import sys
+
+from datetime import datetime
+
+# import common package in parent directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+
+import mongodb_client
+
+PREFERENCE_MODEL_TABLE_NAME = "user_preference_model"
+NEWS_TABLE_NAME = "news"
+
+NUM_OF_CLASSES = 8
+
+# Start MongoDB before running following tests.
+def test_basic():
+    db = mongodb_client.get_db()
+    db[PREFERENCE_MODEL_TABLE_NAME].delete_many({"userId": "test_user"})
+
+    msg = {"userId": "test_user",
+           "newsId": "test_news",
+           "timestamp": str(datetime.utcnow())}
+
+    click_log_processor.handle_message(msg)
+
+    model = db[PREFERENCE_MODEL_TABLE_NAME].find_one({'userId':'test_user'})
+    assert model is not None
+    assert len(model['preference']) == NUM_OF_CLASSES
+
+    print('test_basic passed!')
+
+
+if __name__ == "__main__":
+    test_basic()
+```
+## Recommendation Service
+- 這部分需要再研究
+
+```py
+import operator
+import os
+import sys
+
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+
+# import common package in parent directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+
+import mongodb_client
+
+PREFERENCE_MODEL_TABLE_NAME = "user_preference_model"
+
+SERVER_HOST = 'localhost'
+SERVER_PORT = 5050
+
+# Ref: https://www.python.org/dev/peps/pep-0485/#proposed-implementation
+# Ref: http://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python
+def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+def getPreferenceForUser(user_id):
+    """ Get user's preference in an ordered class list """
+    db = mongodb_client.get_db()
+    model = db[PREFERENCE_MODEL_TABLE_NAME].find_one({'userId':user_id})
+    if model is None:
+        return []
+
+    sorted_tuples = sorted(list(model['preference'].items()), key=operator.itemgetter(1), reverse=True)
+    sorted_list = [x[0] for x in sorted_tuples]
+    sorted_value_list = [x[1] for x in sorted_tuples]
+
+    # If the first preference is same as the last one, the preference makes
+    # no sense.
+    if isclose(float(sorted_value_list[0]), float(sorted_value_list[-1])):
+        return []
+
+    return sorted_list
+
+
+# Threading HTTP Server
+RPC_SERVER = SimpleJSONRPCServer((SERVER_HOST, SERVER_PORT))
+RPC_SERVER.register_function(getPreferenceForUser, 'getPreferenceForUser')
+
+print("Starting HTTP server on %s:%d" % (SERVER_HOST, SERVER_PORT))
+
+RPC_SERVER.serve_forever()
+```
+
+## Recommendation service client
+- Let backend server (operations.py) to use the method
+```py
+import jsonrpclib
+
+URL = "http://localhost:5050/"
+
+client = jsonrpclib.ServerProxy(URL)
+
+def getPreferenceForUser(userId):
+    preference = client.getPreferenceForUser(userId)
+    print("Preference list: %s" % str(preference))
+    return preference
+```
+
+### Modify operations to use Recommendation Service by importing
+```py
+import news_recommendation_service_client
+```
+- Get Preference for the user
+```py
+    # Get preference for the user
+    preference = news_recommendation_service_client.getPreferenceForUser(user_id)
+    topPreference = None
+
+    if preference is not None and len(preference) > 0:
+        topPreference = preference[0]
+
+    for news in sliced_news:
+        # Remove text field to save bandwidth.
+        del news['text']
+        if news['class'] == topPreference:
+            news['reason'] = 'Recommend'
+        if news['publishedAt'].date() == datetime.today().date():
+            news['time'] = 'today'
+    return json.loads(dumps(sliced_news))
+```
 
 ***
 
