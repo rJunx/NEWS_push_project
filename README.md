@@ -1735,6 +1735,23 @@ def test_getNewsSummariesForUser_pagination():
     print('test_getNewsSummariesForUser_pagination passed')
 ```  
 
+## Connect with FrontEnd - RPC Client(in web server)
+- Call the backend server by API (getNewsSummariesForUser)
+```js
+function getNewsSummariesForUser(user_id, page_num, callback) {
+  client.request('getNewsSummariesForUser', [user_id, page_num], function(err, response){
+    if(err) throw err;
+    console.log(response.result);
+    callback(response.result);
+  });
+}
+
+module.exports = {
+  add : add,
+  getNewsSummariesForUser: getNewsSummariesForUser
+}
+
+```
 
 
 ***

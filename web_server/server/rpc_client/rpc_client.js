@@ -14,7 +14,16 @@ function add(a, b, callback) {
   });
 }
 
+function getNewsSummariesForUser(user_id, page_num, callback) {
+  client.request('getNewsSummariesForUser', [user_id, page_num], function(err, response){
+    if(err) throw err;
+    console.log(response.result);
+    callback(response.result);
+  });
+}
+
 module.exports = {
-  add : add
+  add : add,
+  getNewsSummariesForUser: getNewsSummariesForUser
 }
 
