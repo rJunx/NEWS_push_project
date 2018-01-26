@@ -1632,7 +1632,10 @@ NEWS_SOURCES = [
 ]
 ```
 ***
+# Week 2 - 2 Auth
 
+
+***
 # Week 3 - 2 Backend
 - Pagination
 - Preference Model
@@ -1752,6 +1755,116 @@ module.exports = {
 }
 
 ```
+- Test getNewsSummariesForUser
+```js
+// invoke "getNewsSummariesForUser"
+client.getNewsSummariesForUser('test_user', 1, function(response) {
+  console.assert(response != null);
+});
+```
+
+### Change the Router in News.js
+- To get data by calling API
+```js
+// "localhost:3000/news/userId/1@1.com/pageNum/2"
+router.get('/userId/:userId/pageNum/:pageNum', function(req, res, next) {
+  console.log('Fetching news...');
+  user_id = req.params['userId'];
+  page_num = req.params['pageNum'];
+
+  rpc_client.getNewsSummariesForUser(user_id, page_num, function(response) {
+    res.json(response);
+  });
+});
+```
+
+## Change Client - NewsPanel.js
+- Save the pageNum start from 1
+- Status of loadedAll -> if true, we wont send request to server
+
+```js
+this.state = { news:null, pageNum:1, loadedAll:false};
+
+    //    if (!news || news.length == 0) {
+    //       this.setState({loadedAll:true});
+    //     }
+```
+- loadMoreNews()
+- Check the state first
+- Auth.getEmail() to get userID
+- Auth.getToken()
+- this.state.pageNum to get pageNum
+- Change the State while loading new pageNum
+
+```js
+ loadMoreNews() {
+    if (this.state.loadedAll == true) {
+      return;
+    }
+
+    const news_url = 'http://' + window.location.hostname + ':3000' +
+        '/news/userId/' + Auth.getEmail() + '/pageNum/' + this.state.pageNum;
+
+    const request = new Request(
+      encodeURI(news_url),
+      {
+        method:'GET',
+        headers: {
+          'Authorization': 'bearer ' + Auth.getToken(),
+        }
+      });
+
+    fetch(request)
+      .then(res => res.json())
+      .then(news => {
+        if (!news || news.length == 0) {
+          this.setState({loadedAll:true});
+        }
+
+        this.setState({
+          news: this.state.news ? this.state.news.concat(news) : news,
+          pageNum: this.state.pageNum + 1,
+        });
+      });
+  }
+```
+
+## Preference Model
+- We need a model to represent user's news preference.
+- Possible Dimensions:
+```
+Topic - Political, Sport..
+Source - CNN, BBS ...
+Time - newest...
+```
+### Time Decay Model (Moving Average)
+- Topic Based
+- Based on user's click
+- More weight on more recent activities
+- Topic is associated with predict click probability
+- All topics start with same probability.
+
+### How to Update the table?
+- If selected : p = (1 - a) * p + a
+- If not selected : p = (1 - a) * p
+- a is the time decay weight: larger -> more weight on recent (picked a = 0.2)
+
+| Topic | Probability |
+|:-----:|:-----------:|
+| Sport |  0.33 |
+|Entertainment| 0.33 |
+| World|0.33 |
+
+If User Clicks a news whoses topic is "Sport"
+- For Sport, we apply (1- 0.2) * 0.33 + 0.2  
+- Others, we apply (1 - 0.2) * 0.33
+
+| Topic | Probability |
+|:-----:|:-----------:|
+| Sport |  0.464 |
+|Entertainment| 0.264 |
+| World|0.264 |
+
 
 
 ***
