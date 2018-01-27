@@ -1633,6 +1633,57 @@ NEWS_SOURCES = [
 ```
 ***
 # Week 2 - 2 Auth
+## Login Page
+- Saperate Logic and UI
+
+### LoginForm.js
+- JavaScript Destruction (ES6)
+[Destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)
+
+- 直接把 Object 展開 
+```js
+const LoginForm = ({
+  onSubmit,
+  onChange,
+  errors,
+  user,
+}) => (
+    html codes
+);
+```
+- onSubmit : function
+- onChange : function
+- errors : value - deal with the show of error message
+- user : value
+```
+Login title
+Error message
+Text Field (Account)
+Error message
+Text Field (Password)
+Error Meessage
+Submit button
+Sign up
+```
+- Error Message : if ther is a errors.summary, then show the <div>
+```js
+ {errors.summary && <div className="row"><p className="error-message">{errors.summary}</p></div>}
+ ```
+ - Submit button
+ ```js
+ <input type="submit" className="waves-effect waves-light btn indigo lighten-1" value='Log in'/>
+ ```
+ - Check parameters: When Using LoginForm, we need four params (onSubmit, onChange, errors, user), if not we will return an error
+ ```js
+
+LoginForm.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
+    errors: PropTypes.object.isRequired,
+    user: PropTypes.object.isRequired  
+}
+```
+
 
 
 ***
