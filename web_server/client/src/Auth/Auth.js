@@ -12,6 +12,15 @@ class Auth {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
   }
+
+  static getToken() {
+    return localStorage.getItem('token');
+  }
+
+  static getEmail() {
+    return localStorage.getItem('email');
+  }
+  
 }
 
 export default Auth;
