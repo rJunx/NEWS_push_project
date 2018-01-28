@@ -1,10 +1,10 @@
+import ReactDom from 'react-dom';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App/App';
-import LoginPage from './Login/LoginPage';
-import SignUpPage from './SignUp/SignUpPage';
 
-ReactDOM.render(
-  <SignUpPage />,
+import { browserHistory, Router } from 'react-router';
+import routes from './routes';
+
+ReactDom.render(
+  <Router history={browserHistory} routes={routes} />,
   document.getElementById('root')
 );

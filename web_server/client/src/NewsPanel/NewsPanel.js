@@ -2,11 +2,12 @@ import React from 'react';
 import './NewsPanel.css';
 import NewsCard from '../NewsCard/NewsCard';
 import _ from 'lodash';
+import Auth from '../Auth/Auth';
 
 class NewsPanel extends React.Component {
   constructor() {
     super();
-    this.state = { news:null, pageNum:1, loadedAll:false};
+    this.state = { news:null };
   }
 
   handleScroll() {
@@ -14,6 +15,7 @@ class NewsPanel extends React.Component {
         || window.pageYOffset
         || document.documentElement.scrollYTop;
     if ((window.innerHeight + scrollY) >= (document.body.offsetHeight - 50)) {
+      console.log('Loading more news!');
       this.loadMoreNews();
     }
   }
@@ -25,15 +27,9 @@ class NewsPanel extends React.Component {
   }
 
   loadMoreNews() {
-    if (this.state.loadedAll == true) {
-      return;
-    }
-
-    const news_url = 'http://' + window.location.hostname + ':3000' +
-        '/news/userId/' + Auth.getEmail() + '/pageNum/' + this.state.pageNum;
-
+    const news_url = 'http://' + window.location.hostname + ':3000' + '/news';
     const request = new Request(
-      encodeURI(news_url),
+      news_url,
       {
         method:'GET',
         headers: {
@@ -44,13 +40,8 @@ class NewsPanel extends React.Component {
     fetch(request)
       .then(res => res.json())
       .then(news => {
-        if (!news || news.length == 0) {
-          this.setState({loadedAll:true});
-        }
-
         this.setState({
           news: this.state.news ? this.state.news.concat(news) : news,
-          pageNum: this.state.pageNum + 1,
         });
       });
   }
