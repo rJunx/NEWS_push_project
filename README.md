@@ -1633,7 +1633,6 @@ NEWS_SOURCES = [
 ```
 ***
 # Week 2 - 2 Auth
-## Login Page
 - Saperate Logic and UI
 
 ### LoginForm.js
@@ -1682,6 +1681,538 @@ LoginForm.propTypes = {
     errors: PropTypes.object.isRequired,
     user: PropTypes.object.isRequired  
 }
+```
+
+## Login Page
+- render -> onSubmit / onChange / errors / user
+```js
+    render() {
+      return (
+        <LoginForm
+          onSubmit = {(e) => this.processForm(e)}
+          onChange = {(e) => this.changeUser(e)}
+          errors = {this.state.errors}
+          user = {this.state.user}
+        />
+```
+- Constructor : errors, user(email, password)
+```js
+  constructor(props) {
+    super(prop);
+    this.state = {
+      errors: {},
+      user: {
+        email: '',
+        password: ''
+      }
+    };
+  }
+```
+- processForm : get the states of user email and password
+```js
+  processForm(event) {
+    event.preventDefault();
+    const email = this.state.user.email;
+    const password = this.state.user.password;
+
+    console.log('email: ' + email);
+    console.log('password: ' + package);
+
+    // TODO: post login data
+  }
+```
+- changeUser : if user input email or password ,give a new value to 
+```js
+  changeUser(event) {
+    const field = event.target.name;
+    const user = this.state.user;
+    user[field] = event.target.value;
+
+    this.setState({user});
+
+  }
+```
+
+## Index -> Import Login Page
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App/App';
+import LoginPage from './Login/LoginPage';
+
+ReactDOM.render(
+  <LoginPage />,
+  document.getElementById('root')
+);
+```
+
+## Script Tag in index.js
+
+- Then we will face the Problem between jQuery and React (Since our materical need a jQuery to give the styling)
+- In public / index.html, add in Head to import jQuery CDN
+```js
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+```
+- App.js import materizlize js
+```js
+import 'materialize-css/dist/css/materialize.min.css';
+import 'materialize-css/dist/js/materialize.min.js';
+```
+## SignUp Form -> Add a password comfirm
+```js
+ <div className="row">
+          <div className="input-field col s12">
+            <input id="confirm_password" type="password" name="confirm_password" className="validate" onChange={onChange}/>
+            <label htmlFor="confirm_password">Conform Password</label>
+          </div>
+        </div>
+```
+## SignUp Page -> Add a password comfirm
+```js
+    this.state = {
+      errors: {},
+      user: {
+        email: '',
+        password: '',
+        confirm_password: ''
+      }
+    };
+
+if (password !== confirm_password) {
+return;
+}
+
+```
+
+## Error :
+`
+TypeError: Cannot read property 'state' of undefined
+`
+是關於 this 的問題！
+
+#### eventObject
+(e) => 傳入內部 
+
+***
+
+# Authentication 
+## Login
+```
+router| app.post('auth/login')
+
+Normal| validateSignupForm()
+
+Normal| passport.authenticate()
+
+Passport|'local-login' strategy
+
+Token| sign and return token
+
+```
+## SignUp
+```
+router|app.post('auth/signup')
+
+Normal|validateLoginForm()
+
+Normal|passport.authenticate()
+
+Passport|'local-signup' strategy
+```
+## Web
+```
+XXXX| loadMoreNews (with token)
+
+Token| authChecker
+
+Token| verify token
+
+router| app.get('news')
+
+Normal|return news
+```
+
+## Password
+### SHA1 wiht SALT
+只能從Salt推到Hash
+`
+Signup: f(password, salt) = hash(password + salt)
+`
+- For each user, we generate a random a salt and add it to user's password. Server-side generated password.
+`
+Login: hash([provided password] + [stored salt]) == [stored hash]
+`
+- Then the user is authenticated.
+
+## Web-server
+### JWT 用戶瀏覽器上保存 token
+- 登入成功後給個token，存在cache中
+- client/src/Auth
+- Auth.js 見一個類，控制讀寫LocalStorage內的Token，HashMap操作
+- Show user email and use email as account
+- isUserAuthenticated 用來判斷有無token字段，token是否正確由後端處理
+```js
+  static authenticateUser(token, email) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('email', email);
+  }
+
+  static isUserAuthenticated() {
+    return localStorage.getItem('token') !== null;
+  }
+
+  static deauthenticateUser() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+  }
+
+  static getToken() {
+    return localStorage.getItem('token');
+  }
+
+  static getEmail() {
+    return localStorage.getItem('email');
+  }
+
+```
+
+## Create a Base Component
+- 用戶沒登入：顯示LoginPage
+```js
+(<div>
+    <li><Link to="/login">Log in</Link></li>
+    <li><Link to="/signup">Sign up</Link></li>
+    </div>)
+```
+- 用戶已登入：顯示App UI
+```js
+(<div>
+    <li>{Auth.getEmail()}</li>
+    <li><Link to="/logout">Log out</Link></li>
+    </div>)
+```
+- navbar : 
+- 判斷 Aith
+```js
+{Auth.isUserAuthenticated() ? A : B
+```
+
+- 把權限上交給React Router
+```js
+ {children}
+```
+- 超連結 for React Router </Link to =""> </Link>
+```js
+<li><Link to="/login">Log in</Link></li>
+```
+## React Router 在 Client
+``` 
+npm install -s react-router@"<4.0.0"
+```
+## routes .js
+- 用戶在根目錄時：顯示新聞，判斷是否註冊，使用isUserAuthenticated()，callback -> App / LoginPage
+```js
+{
+      path: '/',
+      getComponent: (location, callback) => {
+        if (Auth.isUserAuthenticated()) {
+          callback(null, App);
+        } else {
+          callback(null, LoginPage);
+        }
+      }
+    },
+```
+
+- Login / SingUp
+```js
+   {
+      path: "/login",
+      component: LoginPage
+    },
+
+    {
+      path: "/signup",
+      component: SignUpPage
+    },
+
+```
+- Logout : deauthenticateUser()
+```js
+    {
+      path: '/logout',
+      onEnter: (nextState, replace) => {
+        Auth.deauthenticateUser();
+
+        // change the current URL to /
+        replace('/')
+      }
+```
+### Index.js
+```js
+import ReactDom from 'react-dom';
+import React from 'react';
+
+import { browserHistory, Router } from 'react-router';
+import routes from './routes';
+
+ReactDom.render(
+  <Router history={browserHistory} routes={routes} />,
+  document.getElementById('root')
+);
+```
+## Server
+### App.js 
+- npm cors : 只需要Import後，直接使用，但僅限於開發環境才允許跨域
+```
+npm cors
+```
+
+### LoginPage/SignUpPage - TODO 實際發送數據
+- Server上將有個新的Api處理註冊與登入
+- LoginPage / SignUpPage
+```js
+const url = 'http://' + window.location.hostname + ':3000' + '/auth/signup';
+
+ const url = 'http://' + window.location.hostname + ':3000' + '/auth/login';
+
+```
+- 發送POST請求，必須是一個String化的JSON
+```js
+ const url = 'http://' + window.location.hostname + ':3000' + '/auth/login';
+    const request = new Request(
+      url,
+      {
+        method: 'Post',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: this.state.user.email,
+          password: this.state.user.password
+        })
+      }
+    );
+```
+- Fetch，先確認收到的res是正確的 ==200
+```js
+fetch(request).then(response => {
+      if (response.status === 200) {
+        this.setState({
+          errors: {}
+        });
+
+        response.json().then(json => {
+          console.log(json);
+          Auth.authenticateUser(json.token, email);
+          this.context.router.replace('/');
+        });
+```
+- React Router
+```js
+this.context.router.replace('/');
+```
+
+- 錯誤時：
+```js
+else {
+console.log('Login failed.');
+response.json().then(json => {
+    const errors = json.errors? json.errors : {};
+    errors.summmary = json.message;
+    this.setState({errors});
+});
+}
+});
+```
+### How to use props / Context / Update
+[ReactBaseClasses](https://github.com/facebook/react/blob/master/packages/react/src/ReactBaseClasses.js#L17)
+
+### Desing error from React
+- To make react-router work.
+```js
+LoginPage.contextTypes = {
+  router: PropTypes.object.isRequired
+};
+```
+
+##  Server for getting DB (validateLogin/SignUp/Passport)
+```json
+{
+  "mongoDbUri": "mongodb://test:test@ds058579.mlab.com:58579/cs503",
+  "jwtSecret": "a secret phrase!!"
+}
+```
+```
+npm install -s mongoose
+```
+### mongoose 處理用戶存取帳號密碼的保密
+
+使用Schema做Mapping，存取兩個字段 email 和 password。
+- UserSchema 加入 comparePassword()，驗證用戶提交的密碼是否和儲存的密碼相等，用bcrypt.compare來比較。
+```js
+UserSchema.methods.comparePassword = function comparePassword(password, callback) {
+  bcrypt.compare(password, this.password, callback);
+};
+```
+
+## bcrypt - Salt & Hash
+- 可能遇到的狀況，如果用戶名和password沒有更改，無法繼續，接著生成一個Salt(genSalt)，如果有saltError直接return，如果沒問題，使用salt和用戶的password做hash，如果有hashError再return，最後將user password賦值 hash（最重要一步）。
+
+```js
+UserSchema.pre('save', function saveHook(next) {
+  const user = this;
+
+  // proceed furhter only if the password is modified or the user is new.
+  if (!user.isModified('password')) return next();
+
+  return bcrypt.genSalt((saltError, salt) => {
+    if (saltError) { return next(saltError); }
+
+    return bcrypt.hash(user.password, salt, (hashError, hash) => {
+      if (hashError) { return next(hashError); }
+
+      // replace a password string with hashed value.
+      user.password = hash;
+
+      return next();
+    });
+  });
+});
+```
+### Main.js
+- 讓UserSchema初始化並連接到MongoDB中。
+
+### App.js -> Routing 連接到 config
+```js
+var config = require('./config/config.json');
+require('./models/main.js').connect(config.mongoDbUri);
+```
+
+## Passport & Passport-Local & JWT
+```
+npm install -s passport
+npm install -s passport-local
+npm install -s jsonwebtoken
+```
+
+### Login Passport
+- 導出PassportLocalStrategy，裡面有usernameField / passwordField ，其他並不重要，按照document上操作。
+
+- 利用email找出User，利用User.findOne -> mongoose中定義的UserSchema，如果連接不上MongoDB，會提出error
+
+- 如果!user，找不到用戶，返回一個錯誤訊息，切記不要返回任何User信息。
+```js
+const error = new Error('Incorrect email or password');
+```
+- 比對 userPassword -> user.comparePassWord 剛才在user.js裡面寫好的method
+```js
+   // check if a hashed user's password is equal to a value saved in the database
+    return user.comparePassword(userData.password, (passwordErr, isMatch) => {
+      if (passwordErr) { return done(passwordErr); }
+
+      if (!isMatch) {
+        const error = new Error('Incorrect email or password');
+        error.name = 'IncorrectCredentialsError';
+
+        return done(error);
+      }
+```
+
+- MongoDB自動生成一個id，並把token配給該userid，會返回 name: user.email ，但其實前端並不依賴後端返回該內容
+
+```js
+      const payload = {
+        sub: user._id
+      };
+
+      // create a token string
+      const token = jwt.sign(payload, config.jwtSecret);
+      const data = {
+        name: user.email
+      };
+```
+
+### SignUp Passport
+- 一樣使用PassportLocalStrategy，只要去MongoDB查找是否有相同的User，或是可以嘗試添加一個email，如果加入失敗了會返回error，代表用戶存在，如果成功加入就正常返回。
+
+## 綁定兩個LocalStratgy 到 app.js
+- 在 Auth 的API後才會真正使用，現在先綁定
+```js
+var passport = require('passport');
+
+app.use(passport.initialize());
+var localSignUpStrategy = require('./passport/signup_passport');
+var localLoginStrategy = require('./passport/login_passport');
+passport.use('local-signup', localSignUpStrategy);
+passport.use('local-login', localLoginStrategy);
+
+```
+## Middleware - auth_checker
+- 接了req之後，生成res，讓下一個人使用（express框架）。
+- jwt.verify 用來解開 token，讓userid = decoded.sub，按照這個id去MongoDB中findById，如果確認有這位用戶，就正常到next()
+- 為什麼是middleware？驗證完了，才與許用戶去看新聞，所以得在user調用news之前。
+
+```js
+const authChecker = require('./middleware/auth_checker');
+
+app.use('/', index);
+app.use('/auth', auth);
+app.use('/news', authChecker);
+app.use('/news', news);
+```
+
+## Body Parser
+- 把用戶POST的String，轉化成JSON
+```
+npm install --save body-parser
+```
+```js
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+```
+
+## 新的API - auth.js
+
+## Validator 
+- 用來驗證用戶的輸入，有些惡意攻擊，必須在使用之前先做個validate，除了英語也支持很多語言。
+```
+npm install --s validator
+```
+- validateSignupForm 檢查用戶輸入是否為String，內部的error要轉化成外部的Error Message
+```js
+function validateSignupForm(payload) {
+  console.log(payload);
+  const errors = {};
+  let isFormValid = true;
+  let message = '';
+
+  if (!payload || typeof payload.email !== 'string' || !validator.isEmail(payload.email)) {
+    isFormValid = false;
+    errors.email = 'Please provide a correct email address.';
+  }
+
+  if (!payload || typeof payload.password !== 'string' || payload.password.length < 8) {
+    isFormValid = false;
+    errors.password = 'Password must have at least 8 characters.';
+  }
+
+  if (!isFormValid) {
+    message = 'Check the form for errors.';
+  }
+
+  return {
+    success: isFormValid,
+    message,
+    errors
+  };
+}
+```
+### app.js
+```js
+var auth = require('./routes/auth');
+app.use('/auth', auth);
 ```
 
 
