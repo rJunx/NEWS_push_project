@@ -1,25 +1,30 @@
-import os
-import sys
 import json
+import os
 import pickle
+import random
 import redis
+import sys
+
 from bson.json_util import dumps
+from datetime import datetime
 
-
-
-# import utils packages
+# import common package in parent directory
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+
 import mongodb_client
 import news_recommendation_service_client
 
-NEWS_TABLE_NAME = "news"
-NEWS_LIST_BATCH_SIZE = 10
-NEWS_LIMIT = 200
-USER_NEWS_TIME_OUT_IN_SECONDS = 60
-
+from cloudAMQP_client import CloudAMQPClient
 
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
+
+NEWS_TABLE_NAME = "news"
+CLICK_LOGS_TABLE_NAME = 'click_logs'
+
+NEWS_LIMIT = 100
+NEWS_LIST_BATCH_SIZE = 10
+USER_NEWS_TIME_OUT_IN_SECONDS = 60
 
 LOG_CLICKS_TASK_QUEUE_URL = "amqp://ckfbjqkn:1cpBY4LuQ-awS4kiW0a_wXbiEN8jpu9b@termite.rmq.cloudamqp.com/ckfbjqkn"
 LOG_CLICKS_TASK_QUEUE_NAME = "tap-news-log-clicks-task-queue"
