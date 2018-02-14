@@ -351,7 +351,7 @@ app.use('/static',
 
 - Client Webpack: Build a build folder for server to use
 ```
-npm run build
+
 ```
 * static - css
 * static - js
@@ -2240,7 +2240,7 @@ app.use('/auth', auth);
 - Server sneds paginated data to client
 - Pros: much better user experience
 - Cons: Extra work and storage on backend; Need coordination between client and server
-- Client每次發送請求時需要帶有Page Number，每次從Server端的臨時存儲區提取data(為什麼要放在cache？因為有推薦系統，每位用戶的Lists不同)，對於Server端要額外開啟一個redis，很有壓力
+- Client每次
 
 # Backend Server (Web Server doesn't deal with business Logic)
 
