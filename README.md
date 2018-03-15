@@ -9,9 +9,22 @@ Build a single-page web.
  
 ***
 [Decouple into Components](#decouple-into-components)
+[Create React App](#create-react-app)
 
+-- React Frontend UI --
+[Build up App Component with Marerialize Styling](#build-up-app-component)
+[Build up NewsPanel Component](#build-up-newspanel-component)
+[Build up NewsCard Component](#build-up-newscard-component)
+[Refactor those Components into Web Server file](##refactor-those-components-into-web-server-file)
 
+-- NodeJS Web Server --
+[Express application generator - NodeJS Server](#express-application-generator-nodejs-server)
+[Configure APP.js](#configure-app.js)
+[Server Side Routing](#server-side-routing)
+[RESTful API: Send Backend data from Server(Mock Data)](#restful-api:-send-backend-data-from-server)
 
+-- Frontend and Backend Http Protocol --
+[NewsPanel Requests to Backend for Loading More JSON data]
 ***
 
 # React FrontEnd Build Up
@@ -27,9 +40,7 @@ Build a single-page web.
 * NewsCard : Single News adding into NewsPanel with News image, News title, News contents, News description, News Tage and Links to News.(Would record the clicked by users in future)
 
 
-## Install & Init Environment
-
-### Create React App - likes Angular cli (recommened by Facebook)
+## Create React App
 [Create React App](https://reactjs.org/blog/2016/07/22/create-apps-with-no-configuration.html)
 * Deal with webpack and give a whole framework
 
@@ -47,7 +58,7 @@ cd top-news
 npm start
 ```
 
-## App
+## Build up APP Component
 - public : images
 - src : Each Component has its own folder
 ```
@@ -57,7 +68,6 @@ App / App.js
 - There is only one div tag in render function
 - import React , './App.css', CSS file and logo
 - Use "className" instead of "class" : Since in ES6, we use class for define a App class
-- 
 
 ```js
 import React from 'react';
@@ -133,7 +143,7 @@ ReactDOM.render(
 <div id="root"></div>
 ```
 
-## NewsPanel
+## Build up NewsPanel Component
 ### Save all NewsCard and connect with BackEnd
 - Create NewsPanel folder and NewsPanel.js
 ```
@@ -242,7 +252,8 @@ import NewsPanel from '../NewsPanel/NewsPanel';
 </div>
 ```
 
-## NewsCard - Show UI
+
+## Build up NewsCard Component
 - Create NewsCard Component Folder
 ```
 mkdir src/NewsCard
@@ -304,7 +315,8 @@ class NewsCard extends React.Component {
 
 CSS....
 ```
-## Refactor
+
+## Refactor those Components into Web Server file
 - Create a web_server file and move top-news which was renamed "client" into it
 ```
 mkdir web_server
@@ -319,7 +331,9 @@ mv top-news/ ./web_server/client
 - Development: Node Server + Development Server
 - Publishment: Node Server + build (built by React App)
 
-### Express application generator - NodeJS Server
+
+
+## Express application generator - NodeJS Server
 [Express Application Generator](https://expressjs.com/en/starter/generator.html)
 - Install Globally
 ```
@@ -337,8 +351,8 @@ npm install
 npm start
 ```
 
-### Configue App.js (defualtly installed lots of requirements)
-
+## Configure App.js 
+(defualtly installed lots of requirements)
 - Delete :
 * bodyParser: POST Request
 * cookieParser: Authentication
@@ -370,14 +384,15 @@ app.use(function(req, res, next) {
   res.status(404);
 });
 ```
-
+r
 - package.json : change start
 ```json
   "scripts": {
     "start": "nodemon ./bin/www"
   },
 ```
-## Server - Routes/index.js receive index.html from build
+## Server Side Routing
+### index.js receive index.html from build
 
 - Since init run the '/', redirect to the routes/ index.js
 ```
@@ -401,8 +416,8 @@ module.exports = router;
 ```
 - bin -> www : Place for init the App.
 
-## restAPI for sending backend data from server
 
+## RESTful API: Send Backend data from Server
 
 ### News Routes
 - In routes/news.js
@@ -431,7 +446,7 @@ var news = require('./routes/news');
 app.use('/news', news);
 ```
 
-## Client Side Requests localhost:3000/news to get those JSON data(client/NewsPanel)
+## NewsPanel Requests to Backend for Loading More JSON data
 
 - NewsPanel.js -> loadMoreNews() with backEnd
 * Cache: False -> if true, it might show the old news from cache
