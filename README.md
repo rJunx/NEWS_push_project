@@ -8,6 +8,7 @@
 Build a single-page web.
  
 ***
+#### POST Design
 - [Decouple into Components](#decouple-into-components)
 - [Create React App](#create-react-app)
 
@@ -15,16 +16,29 @@ Build a single-page web.
 - [Build up App Component with Marerialize Styling](#build-up-app-component)
 - [Build up NewsPanel Component](#build-up-newspanel-component)
 - [Build up NewsCard Component](#build-up-newscard-component)
-- [Refactor those Components into Web Server file](##refactor-those-components-into-web-server-file)
+- [Refactor those Components into Web Server file](#refactor-those-components-into-web-server-file)
 
-#### NodeJS Web Server --
-- [Express application generator - NodeJS Server](#express-application-generator-nodejs-server)
-- [Configure APP.js](#configure-app.js)
+#### NodeJS Web Server 
+- [Express application generator - NodeJS Server](#express-application-generator---nodejs-server)
+- [Configure APP.js](#configure-appjs)
 - [Server Side Routing](#server-side-routing)
 - [RESTful API: Send Backend data from Server(Mock Data)](#restful-api:-send-backend-data-from-server)
 
-#### Frontend and Backend Http Protocol --
-- [NewsPanel Requests to Backend for Loading More JSON data](newspanel-requests-to-backend-for-loading-more-json-data)
+#### Frontend and Backend Http Protocol(RESTful API)
+- [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
+- [Access Control Allow Origin](#access-control-allow-origin)
+- [Handle Scrolling](#handle-scrolling)
+- [Debounce](#debounce)
+
+#### Backend - SOA (Service Oriented Architrcture) Design
+- [SOA Desgin Pattern](#soa-desgin-pattern)
+- [RPC Backend Service](#rpc-backend-service)
+- [JSONRPClib Libraries](#jsonrpclib-libraries)
+- [Testing by Postman](#testing-by-postman)
+- [NodeJS Server as a RPCclient - jayson](#nodejs-server-as-a-RPCclient---jayson)
+
+#### Backend - MongoDB connection
+
 ***
 
 # React FrontEnd Build Up
@@ -472,9 +486,10 @@ fetch(request)
       });
   });
 ```
-## Open Both Client and Server side localhost for developing!
 
-### Access-Control-Allow-Origin
+
+## Access Control Allow Origin
+### Both Client and Server side localhost for developing
 - Since we couldn't cross localhost:3000 and localhost:3001 ! Run in the different PORT.
 
 - Temporarily access to run in different PORT
@@ -492,7 +507,7 @@ app.all('*', function(req, res, next) {
 Failed to load http://localhost:3000/news: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:3001' is therefore not allowed access.
 ```
 
-## Scrolling
+## Handle Scrolling
 - Keep using loadMoreNews by combining Scroll EventListener
 
 ```
@@ -550,11 +565,15 @@ import _ from 'lodash';
     window.addEventListener('scroll', () => this.handleScroll());
   }
 ```
+
 ***
 
 
 # SOA (Service Oriented Architrcture)
-#### All service interfaces should be designed for both internal and external users
+
+## SOA Desgin Pattern
+- All service interfaces should be designed for both internal and external users
+
 ```
 Benefit:
 Isolation - language / technology / tools / 
@@ -568,7 +587,9 @@ Latency - network communication eats time
 Test effort - all services require E2E tests
 DevOp : On-call!!!
 ```
-- Example:
+
+## Noraml Application Design Ligic
+
 * Often built as a three tier architecture:
 ```
    [Desktop User]
@@ -619,9 +640,8 @@ Provider                      Consumer
 
 ***
 
+## RPC Backend Service
 
-# Week 2 Backend Service
-- Servive + PRC
 ```
 
 || Client ||  || Node Server ||  || Backend Server ||  || Redis || || MongoDB ||  || ML Server ||
@@ -638,24 +658,16 @@ Provider                      Consumer
 || Client ||  || Node Server ||  || Backend Server ||  || Redis || || MongoDB ||  || ML Server ||
 
 ```
-* Backend Server - RPC Server
-* Node Server - RPC Server
-* MongoDB
-* CloudAMQP
-* News API
-* Pylint and PEP 8 
 
 ## BackEnd Server
-- Copy Week 5 to Week 6
-```
-cp -r week5 / week6
-```
+
 - Open a file backend_server and a service.py
 ``` 
 mkdir backend_server
 touch backend_server/service.py
 ```
-### JSONRPClib library
+
+## JSONRPClib Libraries
 - Build a Client or Server to send or receive RPC Request
 - Not have a good support to Python 3.5, so we need a jsonrpclib-pelix to help development
 [JSONRPClib](https://github.com/joshmarshall/jsonrpclib)
@@ -666,7 +678,7 @@ touch backend_server/service.py
 pip3 install jsonrpclib
 pip3 install jsonrpclib-pelix
 ```
-## RPC Server - Testing
+### RPC Server - Testing
 * Server Host define
 * Server Port define 
 - (Reason why we define is that in the future if we want to change that we could only change in the first line)
@@ -691,7 +703,7 @@ print("Starting RPC server")
 RPC_SERVER.serve_forever()
 ```
 
-#### Use POSTMAN to Test
+## Testing by Postman
 - Send a REQUEST:
 - jsonpc version
 - id : to identify
@@ -718,7 +730,8 @@ Add is called with 13 and 2
 
 ```
 
-## NodeJS Server as a Client to send Request to Backend Server
+## NodeJS Server as a PRCclient
+
 - Open a new folder in web_server/server/
 ```
 mkdir web_server/server/rpc_client
