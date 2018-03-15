@@ -8,19 +8,27 @@
 Build a single-page web.
  
 ***
+- [Decouple into Components](##Decouple into Components)
 
-# Week 1 React FrontEnd Build Up
 
-## De-Couple into Components
+
+***
+
+# React FrontEnd Build Up
+
+## Decouple into Components
 
 ![App Structure](image/app_structure.png)
+### Components:
 
 * Base : Whole React App (Navbar + App)
 * App : Image(title) + NewsPanel
 * NewsPanel : Concludes many NewsCard such as News Lists (While user scorlling, backend send new NewsCard continously)
-* NewsCard : Single News adding into NewsPanel with News image, News title, News contents, News description, News Tage and Links to News.
+* NewsCard : Single News adding into NewsPanel with News image, News title, News contents, News description, News Tage and Links to News.(Would record the clicked by users in future)
+
 
 ## Install & Init Environment
+
 ### Create React App - likes Angular cli (recommened by Facebook)
 [Create React App](https://reactjs.org/blog/2016/07/22/create-apps-with-no-configuration.html)
 * Deal with webpack and give a whole framework
