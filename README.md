@@ -8,7 +8,7 @@
 Build a single-page web.
  
 ***
-- [Decouple into Components](##Decouple into Components)
+[Decouple into Components](#Decouple-into-Components)
 
 
 
