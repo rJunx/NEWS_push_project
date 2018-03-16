@@ -8,52 +8,93 @@
 Build a single-page web.
  
 ***
-#### POST Design
+# Building Record
+
+### POST Design
 - [Decouple into Components](#decouple-into-components)
 - [Create React App](#create-react-app)
 
-#### React Frontend UI 
+### React Frontend UI 
 - [Build up App Component with Marerialize Styling](#build-up-app-component)
 - [Build up NewsPanel Component](#build-up-newspanel-component)
 - [Build up NewsCard Component](#build-up-newscard-component)
 - [Refactor those Components into Web Server file](#refactor-those-components-into-web-server-file)
 
-#### NodeJS Web Server 
+### NodeJS Web Server 
 - [Express application generator - NodeJS Server](#express-application-generator---nodejs-server)
 - [Configure APP.js](#configure-appjs)
 - [Server Side Routing](#server-side-routing)
 - [RESTful API: Send Backend data from Server(Mock Data)](#restful-api-send-backend-data-from-server)
 
-#### Frontend and Backend Http Protocol(RESTful API)
+### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
 - [Access Control Allow Origin](#access-control-allow-origin)
 - [Handle Scrolling](#handle-scrolling)
 - [Debounce](#debounce)
 
-#### Backend - SOA (Service Oriented Architrcture) Design
+###  Backend - SOA (Service Oriented Architrcture) Design
 - [SOA Desgin Pattern](#soa-desgin-pattern)
 - [RPC Backend Service](#rpc-backend-service)
 - [JSONRPClib Libraries](#jsonrpclib-libraries)
 - [Testing by Postman](#testing-by-postman)
 - [NodeJS Server as a RPCclient - jayson](#nodejs-server-as-a-RPCclient---jayson)
 
-#### Backend - MongoDB connection
+### Backend - MongoDB connection
 - [MongoDB](#mongodb)
 - [Mongo Syntax](#mongo-syntax)
 
-#### CloudAMQP: Message Queue
+### CloudAMQP: Message Queue
 - [CloudAMQP](#cloudamqp)
 - [CloudAMQP & Pika](#cloudamqp-&-pika)
 - [CloudAMQP with Python(doc)](https://www.cloudamqp.com/docs/python.html)
 - [Heart Beat](#heart-beat)
-- [Backend API send Request to CloudAMQPClient API for Asking News in Queue](#backend-api-send-request-to-cloudamqpclient-api-for-asking-news-in -queue)
+- [Backend API send Request to CloudAMQPClient API for Asking News in Queue](#backend-api-send-request-to-cloudamqpclient-api-for-asking-news-in-queue)
 
-#### Pylint (Python Coding Style Check)
+### Pylint (Python Coding Style Check)
 - [Pylint](#pylint)
 - [PEP 8 - Style Guide(doc)](https://www.python.org/dev/peps/pep-0008/)
 
-#### :hammer: Refactor : Create an Operator to Receive all API Request from Backend Server
-- [Refactor: Operations](#refactor:-operations)
+### :hammer: Refactor : Create an Operator to Receive all API Request from Backend Server
+- [Refactor: Operations](#refactor-operations)
+- [CloudAMQP_Client]
+- [Mongodb_Client]
+- [News_api_Client]
+- [News_recommendation_service_Client]
+
+### News Data Pineline 
+
+Monitor -> Q(scrape) -> Fetcher -> Q(dedupe) 
+
+- [Data Pineline Processing Steps](#news-pipeline)
+- [News API - getNewsFromSource](#news-api)
+- [News API TEST](#news-api-test)
+
+#### News Monior
+
+- [News Monitor w/ Redis, RabbitMQ, News API](#news-monitor)
+- [Send News to Redis (hashlib)](#sent-to-redis)
+- [Send to RabbitMQ](#send-to-rabbitmq)
+- [Create a Took to clean the Queue](#tool-for-clean-queue)
+
+#### News Fetcher(Scrawler)
+
+- [Web Scrapers(has been replaced)](#web-scrapers)
+- [News Fetcher](#news-fetcher)
+- [Newspaper 3k replaces XPath in News Fetcher](#newspaper-3k)
+- [Newspaper3k(doc)](https://github.com/codelucas/newspaper)
+- [Test Monitor and Fetcher](#test-monitor-and-fetcher)
+
+#### News Deduper
+
+- [New Deduper - TFIDF](#news-deduper---tfidf)
+- [sklearn(TfidfVectorizer)(doc)](http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)
+- [TFIDF Vectorizer (>0.8)](tfidf-vectorizer---test)
+- [Deduper Process](#deduper)
+
+
+### Authentication
+- [Authentication](#authentication)
+
 
 ***
 
@@ -1147,10 +1188,22 @@ def getOneNews():
 import operations
 ```
 
-# Week 3 News Pipeline
+
+## Refactor : Let Utils be used by Both Backend Server and Data pipeline
+```
+mkdir common
+mv backend_server/utils/* common/
+mv backend_server/requirements.txt ./
+rmdir backend_server/utils
+```
+- Chagne the path from service.py and operations.py from utils to common
+```py
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 ```
 
-```
+*** 
+
+# News Pipeline
 
 * News API
 * New Monitor(Thread) : Through News API to get the latest News URL, run every 10 sec
@@ -1166,19 +1219,9 @@ import operations
 * 3. News Deduper
 * 4. News Fetcher - third party package （Replace XPtah)
 
-## Refactor : Let Utils be used by Both Backend Server and Data pipeline
-```
-mkdir common
-mv backend_server/utils/* common/
-mv backend_server/requirements.txt ./
-rmdir backend_server/utils
-```
-- Chagne the path from service.py and operations.py from utils to common
-```py
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-```
 
-## News Monitor
+
+## News API
 [News API](https://newsapi.org/)
 
 ### Request 
@@ -1193,7 +1236,6 @@ status": "ok",
 -"articles": [ ...
 ```
 
-### News API
 ```
 touch common/news_api_client.py
 ```
@@ -1267,12 +1309,13 @@ if __name__ == "__main__":
     test_basic()
 ```
 
+
 ## News Monitor
 - Connect with Redis
 - Connect with RebbitMQ
-- Connect with News API
+- Connect with News API Client
 
-### Redis
+## Sent to Redis
 - Install Redis
 ```
 pip3 install redis
@@ -1285,6 +1328,7 @@ pip3 install redis
 - What digest to be used? To see if there is a dupilcate in Redis by transfering Digest into a Hashlib which could save the space in Redis
 - Others, we could use it in React Frontend
 - Add back digest to News JSON
+
 ```py
 """News Monitor"""
 import hashlib
@@ -1335,7 +1379,7 @@ redis_client = redis.StrictRedis(REDIS_HOST, REDIS_PORT)
             redis_client.expire(news_digest, NEWS_TIME_OUT_IN_SECONDS)
 ```
 
-## Sned to RabbitMQ (CloudAMQP Client)
+## Send to RabbitMQ 
 - init and import CloudAMQP Client
 - Need to apply anotehr QUEUE different from TEST URL
 ```py
@@ -1357,12 +1401,12 @@ cloudAMQP_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_
 ```
 
 
-### Stock in cloudAMQP Problems!(Cloudn't use the URL)
+### Stock in cloudAMQP Problems!(sloved - Server issue)
 ```
 pika.exceptions.ProbableAuthenticationError: (403, 'ACCESS_REFUSED - Login was refused using authentication mechanism PLAIN. For details see the broker logfile.')
 ```
 
-### Tool for Clearn Queue
+## Tool for Clean Queue
 ```py
 import os
 import sys
@@ -1396,6 +1440,7 @@ if __name__ == "__main__":
     clearQueue(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
     # clearQueue(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NEWS_TASK_QUEUE_NAME)
 ```
+
 
 ## Web Scrapers
 
@@ -1461,9 +1506,10 @@ with open(USER_AGENTS_FILE, 'rb') as uaf:
 random.shuffle(USER_AGENTS)
 ```
 
-## Fetcher
+## News Fetcher
 - Take a News Url from Queue(news monitor) and use scraper to get the contents and send it into the next Queue
 - While loop likes Moniter, get a message from scrape_news_queue_client and use handle message
+
 ```py
 while True:
     if scrape_news_queue_client is not None:
@@ -1525,7 +1571,7 @@ dedupe_news_queue_client = CloudAMQPClient(DEDUPE_NEWS_TASK_QUEUE_URL, DEDUPE_NE
 scrape_news_queue_client = CloudAMQPClient(SCRAPE_NEWS_TASK_QUEUE_URL, SCRAPE_NEWS_TASK_QUEUE_NAME)
 ```
 
-## How to TEST
+## TEST Monitor and Fetcher
 - Clear Redis
 ```
 redis-cli flushall
@@ -1543,7 +1589,8 @@ python3 news_monitor.py
 python3 news_fetcher.py
 ```
 
-## DeDuper 重複數據刪除 - TFITF 
+## News Deduper - TFIDF 
+
 ### sklearn - Python Package for ML
 - With the dependencies:
 - numpy
@@ -1555,7 +1602,7 @@ pip3 install numpy
 pip3 install scipy
 pip3 install python-dateutil
 ```
-### TFIDF Vectorizer - Test
+## TFIDF Vectorizer - Test
 ```py
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -1578,12 +1625,14 @@ print(pairwise_sim.A)
  [ 0.          0.          1.          0.27993128]
  [ 0.          0.          0.27993128  1.        ]]
  ```
+
 ### If the number > 0.8 , we could recognize those news as the same an just ignore them
 
 
 ## Deduper
 - Get the news from Queue and Analyze if the TFIDF value greater than 0.8 and dont add in the DB
 - Go through cloudAMQP to get message
+
 ```py
 while True:
     if cloudAMQP_client is not None:
@@ -1660,7 +1709,8 @@ if same_day_news_list is not None and len(same_day_news_list) > 0:
     db[NEWS_TABLE_NAME].replace_one({'digest': task['digest']}, task, upsert=True)
 ```
 
-## Newspaper 3k - Python Library
+
+## Newspaper 3k
 [Newspaper3k](https://github.com/codelucas/newspaper)
 - Used this library insteads of our scraper
 - Since if we would like to get the news from different sources, we need to analyze each pages and get the structure of XPath
@@ -1693,8 +1743,11 @@ NEWS_SOURCES = [
     'the-washington-post'
 ]
 ```
+
 ***
-# Week 2 - 2 Auth
+
+## Authentication 
+
 - Saperate Logic and UI
 
 ### LoginForm.js
