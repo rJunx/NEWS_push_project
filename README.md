@@ -22,7 +22,7 @@ Build a single-page web.
 - [Express application generator - NodeJS Server](#express-application-generator---nodejs-server)
 - [Configure APP.js](#configure-appjs)
 - [Server Side Routing](#server-side-routing)
-- [RESTful API: Send Backend data from Server(Mock Data)](#restful-api:-send-backend-data-from-server)
+- [RESTful API: Send Backend data from Server(Mock Data)](#restful-api-send-backend-data-from-server)
 
 #### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
@@ -38,6 +38,22 @@ Build a single-page web.
 - [NodeJS Server as a RPCclient - jayson](#nodejs-server-as-a-RPCclient---jayson)
 
 #### Backend - MongoDB connection
+- [MongoDB](#mongodb)
+- [Mongo Syntax](#mongo-syntax)
+
+#### CloudAMQP: Message Queue
+- [CloudAMQP](#cloudamqp)
+- [CloudAMQP & Pika](#cloudamqp-&-pika)
+- [CloudAMQP with Python(doc)](https://www.cloudamqp.com/docs/python.html)
+- [Heart Beat](#heart-beat)
+- [Backend API send Request to CloudAMQPClient API for Asking News in Queue](#backend-api-send-request-to-cloudamqpclient-api-for-asking-news-in -queue)
+
+#### Pylint (Python Coding Style Check)
+- [Pylint](#pylint)
+- [PEP 8 - Style Guide(doc)](https://www.python.org/dev/peps/pep-0008/)
+
+#### :hammer: Refactor : Create an Operator to Receive all API Request from Backend Server
+- [Refactor: Operations](#refactor:-operations)
 
 ***
 
