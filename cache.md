@@ -14,6 +14,11 @@
 - [Server Side Routing](#server-side-routing)
 - [RESTful API: Send Backend data from Server(Mock Data)](#restful-api-send-backend-data-from-server)
 
+#### RestFul API features (By Routing)
+- [Auth](#server-side-auth)
+- [Index]
+- [News]
+
 ### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
 - [Access Control Allow Origin](#access-control-allow-origin)
@@ -76,9 +81,51 @@ Monitor -> Q(scrape) -> Fetcher -> Q(dedupe)
 
 - [New Deduper - TFIDF](#news-deduper---tfidf)
 - [sklearn(TfidfVectorizer)(doc)](http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)
-- [TFIDF Vectorizer (>0.8)](tfidf-vectorizer---test)
+- [TFIDF Vectorizer (>0.8)](#tfidf-vectorizer---test)
 - [Deduper Process](#deduper)
 
 
-### Authentication
+### Authentication UI
 - [Authentication](#authentication)
+- [LoginForm(deal with Input)](#loginform)
+- [LoginPage(deal with logic)](#loginpage)
+- [SignUpForm](#signupform)
+- [SignUpPage](#signuppage)
+
+### Authentication Logic
+- [Authentication Implementation](#authentication-implementation)
+- [JWT](#jwt-and-salt)
+- [jsonwebtoken(doc)](https://www.npmjs.com/package/jsonwebtoken)
+
+
+#### Frontend - src/Auth
+- [FrontEnd Auth - token base](#frontend-auth)
+- [Base Component with Login and SignUp](#base-component-with-login-and-signup)
+
+#### React Router - With Auth
+isUserAuthenticated()
+- [React Router in Client](#react-router-in-client)
+
+#### Backend auth
+- [For developing : cors (doc)](https://www.npmjs.com/package/cors)
+- [Server Side Auth](#server-side-auth)
+- [Service for Getting user data from mongodb](service-for-getting-user-data-from-mongodb)
+- [bcrypt- Salt and Hash(UserSchema)](#bcrypt---salt-and-hash)
+- [Login Passport](#login-passport)
+- [SignUp Passport](#signup-passport)
+- [Middleware - auth_checker](#middleware)
+
+
+#### :hammer: Auth Refactor
+- [Auth API](#auth-api)
+- [Validator(doc)](https://www.npmjs.com/package/validator)
+
+
+### Web Server Feature - Pagination
+-[Pagination](#pagination)
+
+
+### Web Server Feature - Preference Model
+
+
+### Web Server Feature - Click Log Processor

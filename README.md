@@ -1,4 +1,4 @@
-# TOP News: Real Time News Scraping and Recommendation System
+# Real Time News Scraping and Recommendation System
 
 * Implemented a data pipeline which monitors, scrapes and dedupes latest news (MongoDB, Redis, RabbitMQ);
 * Designed data monitors for obtaining latest news from famous websites and recommend to web server.
@@ -25,6 +25,11 @@ Build a single-page web.
 - [Configure APP.js](#configure-appjs)
 - [Server Side Routing](#server-side-routing)
 - [RESTful API: Send Backend data from Server(Mock Data)](#restful-api-send-backend-data-from-server)
+
+#### RestFul API features (By Routing)
+- [Auth](#server-side-auth)
+- [Index]
+- [News]
 
 ### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
@@ -88,13 +93,54 @@ Monitor -> Q(scrape) -> Fetcher -> Q(dedupe)
 
 - [New Deduper - TFIDF](#news-deduper---tfidf)
 - [sklearn(TfidfVectorizer)(doc)](http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)
-- [TFIDF Vectorizer (>0.8)](tfidf-vectorizer---test)
+- [TFIDF Vectorizer (>0.8)](#tfidf-vectorizer---test)
 - [Deduper Process](#deduper)
 
 
-### Authentication
+### Authentication UI
 - [Authentication](#authentication)
+- [LoginForm(deal with Input)](#loginform)
+- [LoginPage(deal with logic)](#loginpage)
+- [SignUpForm](#signupform)
+- [SignUpPage](#signuppage)
 
+### Authentication Logic
+- [Authentication Implementation](#authentication-implementation)
+- [JWT](#jwt-and-salt)
+- [jsonwebtoken(doc)](https://www.npmjs.com/package/jsonwebtoken)
+
+
+#### Frontend - src/Auth
+- [FrontEnd Auth - token base](#frontend-auth)
+- [Base Component with Login and SignUp](#base-component-with-login-and-signup)
+
+#### React Router - With Auth
+isUserAuthenticated()
+- [React Router in Client](#react-router-in-client)
+
+#### Backend auth
+- [For developing : cors (doc)](https://www.npmjs.com/package/cors)
+- [Server Side Auth](#server-side-auth)
+- [Service for Getting user data from mongodb](service-for-getting-user-data-from-mongodb)
+- [bcrypt- Salt and Hash(UserSchema)](#bcrypt---salt-and-hash)
+- [Login Passport](#login-passport)
+- [SignUp Passport](#signup-passport)
+- [Middleware - auth_checker](#middleware)
+
+
+#### :hammer: Auth Refactor
+- [Auth API](#auth-api)
+- [Validator(doc)](https://www.npmjs.com/package/validator)
+
+
+### Web Server Feature - Pagination
+-[Pagination](#pagination)
+
+
+### Web Server Feature - Preference Model
+
+
+### Web Server Feature - Click Log Processor
 
 ***
 
@@ -1746,11 +1792,11 @@ NEWS_SOURCES = [
 
 ***
 
-## Authentication 
+# Authentication 
 
-- Saperate Logic and UI
+- Separate Logic and UI
 
-### LoginForm.js
+## LoginForm
 - JavaScript Destruction (ES6)
 [Destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)
 
@@ -1864,6 +1910,7 @@ ReactDOM.render(
 ## Script Tag in index.js
 
 - Then we will face the Problem between jQuery and React (Since our materical need a jQuery to give the styling)
+
 - In public / index.html, add in Head to import jQuery CDN
 ```js
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -1873,7 +1920,8 @@ ReactDOM.render(
 import 'materialize-css/dist/css/materialize.min.css';
 import 'materialize-css/dist/js/materialize.min.js';
 ```
-## SignUp Form -> Add a password comfirm
+## SignUpForm 
+-Add a password comfirm
 ```js
  <div className="row">
           <div className="input-field col s12">
@@ -1882,7 +1930,8 @@ import 'materialize-css/dist/js/materialize.min.js';
           </div>
         </div>
 ```
-## SignUp Page -> Add a password comfirm
+## SignUpPage 
+- Add a password comfirm
 ```js
     this.state = {
       errors: {},
@@ -1899,18 +1948,11 @@ return;
 
 ```
 
-## Error :
-`
-TypeError: Cannot read property 'state' of undefined
-`
-是關於 this 的問題！
-
-#### eventObject
-(e) => 傳入內部 
-
 ***
 
-# Authentication 
+# Authentication Implementation 
+
+![Auth](./image/Auth.png)
 ## Login
 ```
 router| app.post('auth/login')
@@ -1947,25 +1989,15 @@ router| app.get('news')
 Normal|return news
 ```
 
-## Password
-### SHA1 wiht SALT
-只能從Salt推到Hash
-`
-Signup: f(password, salt) = hash(password + salt)
-`
-- For each user, we generate a random a salt and add it to user's password. Server-side generated password.
-`
-Login: hash([provided password] + [stored salt]) == [stored hash]
-`
-- Then the user is authenticated.
 
-## Web-server
+## FrontEnd Auth
 ### JWT 用戶瀏覽器上保存 token
 - 登入成功後給個token，存在cache中
 - client/src/Auth
 - Auth.js 見一個類，控制讀寫LocalStorage內的Token，HashMap操作
 - Show user email and use email as account
 - isUserAuthenticated 用來判斷有無token字段，token是否正確由後端處理
+
 ```js
   static authenticateUser(token, email) {
     localStorage.setItem('token', token);
@@ -1991,7 +2023,24 @@ Login: hash([provided password] + [stored salt]) == [stored hash]
 
 ```
 
-## Create a Base Component
+## JWT and Salt
+
+### SHA1 wiht SALT
+只能從Salt推到Hash
+
+`
+Signup: f(password, salt) = hash(password + salt)
+`
+- For each user, we generate a random a salt and add it to user's password. Server-side generated password.
+`
+Login: hash([provided password] + [stored salt]) == [stored hash]
+`
+- Then the user is authenticated.
+
+
+
+## Base Component with Login and SignUp
+
 - 用戶沒登入：顯示LoginPage
 ```js
 (<div>
@@ -2020,11 +2069,11 @@ Login: hash([provided password] + [stored salt]) == [stored hash]
 ```js
 <li><Link to="/login">Log in</Link></li>
 ```
-## React Router 在 Client
+## React Router in Client
 ``` 
 npm install -s react-router@"<4.0.0"
 ```
-## routes .js
+### routes .js
 - 用戶在根目錄時：顯示新聞，判斷是否註冊，使用isUserAuthenticated()，callback -> App / LoginPage
 ```js
 {
@@ -2076,7 +2125,8 @@ ReactDom.render(
   document.getElementById('root')
 );
 ```
-## Server
+
+## Server Side Auth
 ### App.js 
 - npm cors : 只需要Import後，直接使用，但僅限於開發環境才允許跨域
 ```
@@ -2086,6 +2136,7 @@ npm cors
 ### LoginPage/SignUpPage - TODO 實際發送數據
 - Server上將有個新的Api處理註冊與登入
 - LoginPage / SignUpPage
+
 ```js
 const url = 'http://' + window.location.hostname + ':3000' + '/auth/signup';
 
@@ -2141,10 +2192,13 @@ response.json().then(json => {
 }
 });
 ```
+
+
 ### How to use props / Context / Update
 [ReactBaseClasses](https://github.com/facebook/react/blob/master/packages/react/src/ReactBaseClasses.js#L17)
 
 ### Desing error from React
+
 - To make react-router work.
 ```js
 LoginPage.contextTypes = {
@@ -2172,7 +2226,7 @@ UserSchema.methods.comparePassword = function comparePassword(password, callback
 };
 ```
 
-## bcrypt - Salt & Hash
+## bcrypt - Salt and Hash
 - 可能遇到的狀況，如果用戶名和password沒有更改，無法繼續，接著生成一個Salt(genSalt)，如果有saltError直接return，如果沒問題，使用salt和用戶的password做hash，如果有hashError再return，最後將user password賦值 hash（最重要一步）。
 
 ```js
@@ -2205,14 +2259,16 @@ var config = require('./config/config.json');
 require('./models/main.js').connect(config.mongoDbUri);
 ```
 
-## Passport & Passport-Local & JWT
+
+## Login Passport
+
+### Passport & Passport-Local & JWT
 ```
 npm install -s passport
 npm install -s passport-local
 npm install -s jsonwebtoken
 ```
 
-### Login Passport
 - 導出PassportLocalStrategy，裡面有usernameField / passwordField ，其他並不重要，按照document上操作。
 
 - 利用email找出User，利用User.findOne -> mongoose中定義的UserSchema，如果連接不上MongoDB，會提出error
@@ -2264,7 +2320,8 @@ passport.use('local-signup', localSignUpStrategy);
 passport.use('local-login', localLoginStrategy);
 
 ```
-## Middleware - auth_checker
+## Middleware 
+- auth_checker
 - 接了req之後，生成res，讓下一個人使用（express框架）。
 - jwt.verify 用來解開 token，讓userid = decoded.sub，按照這個id去MongoDB中findById，如果確認有這位用戶，就正常到next()
 - 為什麼是middleware？驗證完了，才與許用戶去看新聞，所以得在user調用news之前。
@@ -2288,7 +2345,7 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 ```
 
-## 新的API - auth.js
+## Auth API
 
 ## Validator 
 - 用來驗證用戶的輸入，有些惡意攻擊，必須在使用之前先做個validate，除了英語也支持很多語言。
@@ -2333,7 +2390,8 @@ app.use('/auth', auth);
 
 
 ***
-# Week 3 - 2 Backend
+
+## WebServer Features 
 - Pagination
 - Preference Model
 - Click Log Processor
@@ -2358,7 +2416,6 @@ app.use('/auth', auth);
 - Client每次
 
 # Backend Server (Web Server doesn't deal with business Logic)
-
 - new Function
 - api used _ , in opeartion funcion used camelCase
 ```py
