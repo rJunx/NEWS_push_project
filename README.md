@@ -9,7 +9,6 @@ Build a single-page web.
  
 ***
 # Building Record
-
 ### POST Design
 - [Decouple into Components](#decouple-into-components)
 - [Create React App](#create-react-app)
@@ -28,8 +27,8 @@ Build a single-page web.
 
 #### RestFul API features (By Routing)
 - [Auth](#server-side-auth)
-- [Index]
-- [News]
+- [Index](#server-side-routing)
+- [News](#refactor-the-get-news-api)
 
 ### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
@@ -111,37 +110,50 @@ Monitor -> Q(scrape) -> Fetcher -> Q(dedupe)
 
 
 #### Frontend - src/Auth
+- Check if user owns a token or redirect to login page
 - [FrontEnd Auth - token base](#frontend-auth)
 - [Base Component with Login and SignUp](#base-component-with-login-and-signup)
+- Send Http Request to Backend to handle login logic
+- [LoginPage(deal with logic)](#loginpage)
+- [SignUpPage](#signuppage)
 
 #### React Router - With Auth
-isUserAuthenticated()
+- isUserAuthenticated()
 - [React Router in Client](#react-router-in-client)
 
 #### Backend auth
 - [For developing : cors (doc)](https://www.npmjs.com/package/cors)
 - [Server Side Auth](#server-side-auth)
 - [Service for Getting user data from mongodb](service-for-getting-user-data-from-mongodb)
+
+- Hash and Salt the password since we couldn't directly save into Database
 - [bcrypt- Salt and Hash(UserSchema)](#bcrypt---salt-and-hash)
+
+- Valide the Email Input to aviod Rainbow attack
+- [validator- Check Email](#validator)
+- [Validator(doc)](https://www.npmjs.com/package/validator)
+
+- Deat With DB connection and Passpord Campare
 - [Login Passport](#login-passport)
 - [SignUp Passport](#signup-passport)
+
+- Check Token the user own to authoritize user to load more news
 - [Middleware - auth_checker](#middleware)
 
 
 #### :hammer: Auth Refactor
 - [Auth API](#auth-api)
-- [Validator(doc)](https://www.npmjs.com/package/validator)
+
 
 
 ### Web Server Feature - Pagination
--[Pagination](#pagination)
+- [Pagination](#pagination)
 
 
 ### Web Server Feature - Preference Model
 
 
 ### Web Server Feature - Click Log Processor
-
 ***
 
 # React FrontEnd Build Up
@@ -1953,6 +1965,19 @@ return;
 # Authentication Implementation 
 
 ![Auth](./image/Auth.png)
+
+#### 前端： 
+1. 只能判斷 localStorage 是否有 token，但實際判斷用戶身份，還是握在Server端
+2. SignUp Page: 直接Post Request給後端
+3. Login Page: 直接 Post Request 給後端
+4. Base: React Router 若 User 沒有登入 redirect 到 Login 
+
+#### 後端：
+1. 處理 SignUp 的 Request，檢查input，將密碼 salt + Hash 之後，將用戶email & password 存入 DB (validator + bcrypt + passport)
+2. 處理 Login的 Request，比對密碼 (passport)
+( passport + mongoose 處理所有 DataBase間的連接，與密碼比對)
+3. loadMoreNews() 被調用時，會透過 auth_checker 檢查存在前端的 token 是否正確 (jwt)
+
 ## Login
 ```
 router| app.post('auth/login')
@@ -2517,7 +2542,7 @@ client.getNewsSummariesForUser('test_user', 1, function(response) {
 });
 ```
 
-### Change the Router in News.js
+## Refactor the Get News API
 - To get data by calling API
 ```js
 // "localhost:3000/news/userId/1@1.com/pageNum/2"

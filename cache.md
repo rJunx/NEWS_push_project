@@ -1,3 +1,4 @@
+# Building Record
 ### POST Design
 - [Decouple into Components](#decouple-into-components)
 - [Create React App](#create-react-app)
@@ -16,8 +17,8 @@
 
 #### RestFul API features (By Routing)
 - [Auth](#server-side-auth)
-- [Index]
-- [News]
+- [Index](#server-side-routing)
+- [News](#refactor-the-get-news-api)
 
 ### Frontend and Backend Http Protocol(RESTful API)
 - [NewsPanel Requests to Backend for Loading More JSON data](#newspanel-requests-to-backend-for-loading-more-json-data)
@@ -99,30 +100,44 @@ Monitor -> Q(scrape) -> Fetcher -> Q(dedupe)
 
 
 #### Frontend - src/Auth
+- Check if user owns a token or redirect to login page
 - [FrontEnd Auth - token base](#frontend-auth)
 - [Base Component with Login and SignUp](#base-component-with-login-and-signup)
+- Send Http Request to Backend to handle login logic
+- [LoginPage(deal with logic)](#loginpage)
+- [SignUpPage](#signuppage)
 
 #### React Router - With Auth
-isUserAuthenticated()
+- isUserAuthenticated()
 - [React Router in Client](#react-router-in-client)
 
 #### Backend auth
 - [For developing : cors (doc)](https://www.npmjs.com/package/cors)
 - [Server Side Auth](#server-side-auth)
 - [Service for Getting user data from mongodb](service-for-getting-user-data-from-mongodb)
+
+- Hash and Salt the password since we couldn't directly save into Database
 - [bcrypt- Salt and Hash(UserSchema)](#bcrypt---salt-and-hash)
+
+- Valide the Email Input to aviod Rainbow attack
+- [validator- Check Email](#validator)
+- [Validator(doc)](https://www.npmjs.com/package/validator)
+
+- Deat With DB connection and Passpord Campare
 - [Login Passport](#login-passport)
 - [SignUp Passport](#signup-passport)
+
+- Check Token the user own to authoritize user to load more news
 - [Middleware - auth_checker](#middleware)
 
 
 #### :hammer: Auth Refactor
 - [Auth API](#auth-api)
-- [Validator(doc)](https://www.npmjs.com/package/validator)
+
 
 
 ### Web Server Feature - Pagination
--[Pagination](#pagination)
+- [Pagination](#pagination)
 
 
 ### Web Server Feature - Preference Model
