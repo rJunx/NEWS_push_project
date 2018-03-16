@@ -545,7 +545,7 @@ offestHeight  |          |  |
     window.addEventListener('scroll', () => this.handleScroll());
   }
 ```
-## Debounce 去抖動
+## Debounce
 
 [Lodash](https://lodash.com/)
 
@@ -730,7 +730,7 @@ Add is called with 13 and 2
 
 ```
 
-## NodeJS Server as a PRCclient
+## NodeJS Server as a RPCclient - jayson
 
 - Open a new folder in web_server/server/
 ```
@@ -823,6 +823,8 @@ sudo apt-get install -y mongodb-org
 ./mongo
 ```
 
+
+## Mongo Syntax
 ### Test MongoDB (Crawling in the future)
 - show DB
 ```
@@ -838,7 +840,8 @@ show collections
 show tables
 ```
 
-- Query 
+- (Query Documents)[https://docs.mongodb.com/manual/tutorial/query-documents/]
+
 ```
 db.news.find
 db.news.fundOne()
@@ -930,6 +933,7 @@ RabbitMQ is a message broker: it accepts and forwards messages. You can think ab
 
 The major difference between RabbitMQ and the post office is that it doesn't deal with paper, instead it accepts, stores and forwards binary blobs of data ‒ messages.
 ```
+
 ## CloudAMQP && Pika
 
 - AMQP URL is the address to receive and send the messages
@@ -947,8 +951,8 @@ pika
 ```
 touch backend_server/utils/cloudAMQP_client.py
 ```
-
-### CloudAMQP
+### How CloudAMQP works
+[CloudAMQP with Python](https://www.cloudamqp.com/docs/python.html)
 - String -> JSON -> Serialization
 - Name of Queue based on instance thus we need to create a class
 - Parameters of URL
@@ -956,6 +960,7 @@ touch backend_server/utils/cloudAMQP_client.py
 - Connection by Pika(blocking Connection)
 - Open a Channel for receiving message
 - Declare the channel as queue name
+
 ```py
 class CloudAMQPClient:
   def __init__(self, cloud_amqp_url, queue_name):
@@ -1004,7 +1009,7 @@ a three-tuple; (None, None, None) if the queue was empty; otherwise (method, pro
       return None
 ```
 
-#### HearBeat
+## Heart Beat
 - BlockingConnection.sleep is a safer way to sleep than time.sleep(). 
 - This will repond to server's heartbeat.
 ```py
@@ -1040,10 +1045,11 @@ if __name__ == "__main__":
   test_basic()
 ```
 
-## API!
+## Backend API send Request to CloudAMQPClient API for Asking News in Queue
 - Test for get one news on service.py
 - import json and package dumps to transfer from BSON to JSON
 - Register server in this RPC Server
+
 ```
 This module provides two helper methods dumps and loads that wrap the native json methods and provide explicit BSON conversion to and from JSON. JSONOptions provides a way to control how JSON is emitted and parsed, with the default being the legacy PyMongo format. json_util can also generate Canonical or Relaxed Extended JSON when CANONICAL_JSON_OPTIONS or RELAXED_JSON_OPTIONS is provided, respectively.
 ```
@@ -1072,8 +1078,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 import mongodb_client
 ```
 
-## Python - Pylint (Coding Style Check)
+## Pylint 
 [PEP 8 - Style Guide](https://www.python.org/dev/peps/pep-0008/)
+
 - Install PyLint
 ```
 pip3 install pylint
@@ -1095,8 +1102,11 @@ C: 20, 0: Missing function docstring (missing-docstring)
 * invalid-name : couldn't use argument named a -> num1
 * bad-whitespace: 1, 2
 
-## Refactor
-- Get One New need to be put other files to let service become a simple surface just receive the API request
+
+***
+
+## Refactor: Operations
+- Get One News need to be put other files to let service become a simple surface just receive the API request
 - open a file "operations.py"
 ```py
 import os

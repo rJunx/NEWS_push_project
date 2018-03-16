@@ -13,7 +13,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 
 import mongodb_client
 import news_recommendation_service_client
-
 from cloudAMQP_client import CloudAMQPClient
 
 REDIS_HOST = "localhost"
